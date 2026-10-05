@@ -1,0 +1,17 @@
+Redes de Computadores
+
+Uma rede de computadores é um conjunto de dispositivos interligados que trocam informações por meio de enlaces de comunicação. A internet é a maior rede do mundo e conecta bilhões de computadores, celulares, servidores e sensores. Para que essa comunicação funcione, os dispositivos seguem regras padronizadas chamadas protocolos.
+
+O modelo de referência OSI divide a comunicação em sete camadas: física, enlace, rede, transporte, sessão, apresentação e aplicação. Na prática, a internet utiliza o modelo TCP/IP, que organiza a comunicação em quatro ou cinco camadas. Cada camada oferece serviços para a camada superior e utiliza os serviços da camada inferior, o que facilita o projeto e a manutenção dos protocolos.
+
+Na camada de rede, o protocolo IP é responsável pelo endereçamento e pelo roteamento dos pacotes. Cada dispositivo recebe um endereço IP, e os roteadores decidem por qual caminho cada pacote deve seguir. Os roteadores consultam tabelas de roteamento usando a regra do maior prefixo correspondente, e estruturas como a Trie binária são utilizadas para realizar essa busca de prefixos de endereços de forma rápida. Protocolos de roteamento como OSPF e BGP mantêm essas tabelas atualizadas, e o OSPF utiliza o algoritmo de Dijkstra para calcular os menores caminhos.
+
+Na camada de transporte, o protocolo TCP oferece uma comunicação confiável e orientada à conexão. Ele garante a entrega dos dados na ordem correta, realiza o controle de fluxo e o controle de congestionamento. O protocolo UDP, por outro lado, é mais simples e não garante a entrega, sendo preferido em aplicações sensíveis a atrasos, como jogos online, chamadas de voz e transmissões ao vivo.
+
+Na camada de aplicação estão os protocolos utilizados diretamente pelos programas. O HTTP e o HTTPS são usados na navegação na web, o SMTP no envio de mensagens de correio eletrônico e o DNS na tradução de nomes de domínio em endereços IP. O DNS funciona como uma grande base de dados distribuída e hierárquica, e utiliza cache para reduzir o tempo de resposta.
+
+As redes locais, conhecidas como LAN, conectam dispositivos em uma área restrita, como uma casa, um escritório ou um laboratório. As redes de longa distância, conhecidas como WAN, conectam redes locais em cidades e países diferentes. A tecnologia Ethernet domina as redes cabeadas, enquanto o Wi-Fi é o padrão das redes sem fio.
+
+A segurança de redes envolve firewalls, sistemas de detecção de intrusão, redes privadas virtuais e criptografia. Ataques de negação de serviço, interceptação de tráfego e falsificação de endereços são ameaças comuns. A criptografia com o protocolo TLS protege a confidencialidade e a integridade dos dados transmitidos na web, e funções hash criptográficas são usadas para verificar se uma mensagem foi alterada.
+
+O desempenho de uma rede é avaliado por métricas como largura de banda, latência, perda de pacotes e variação do atraso. Com a computação em nuvem, a internet das coisas e as redes móveis de quinta geração, a demanda por redes rápidas, seguras e confiáveis continua crescendo.

@@ -1,0 +1,17 @@
+Inteligência Artificial
+
+A inteligência artificial é a área da computação que estuda e desenvolve sistemas capazes de executar tarefas que normalmente exigiriam inteligência humana, como reconhecer imagens, compreender a linguagem, tomar decisões e aprender com a experiência. Desde as primeiras pesquisas da década de 1950, a área passou por ciclos de grande entusiasmo e períodos de descrédito, até alcançar a popularidade atual impulsionada pelo aprendizado profundo.
+
+Os primeiros sistemas de inteligência artificial eram baseados em regras e em busca. Algoritmos de busca em espaço de estados, como a busca em largura, a busca em profundidade e a busca A estrela, eram usados para resolver quebra-cabeças, jogos e problemas de planejamento. Os sistemas especialistas representavam o conhecimento de especialistas humanos na forma de regras do tipo se e então.
+
+O aprendizado de máquina mudou o foco da programação explícita para o aprendizado a partir de dados. No aprendizado supervisionado, o algoritmo recebe exemplos rotulados e aprende a prever o rótulo de novos exemplos. Regressão linear, árvores de decisão, máquinas de vetores de suporte e redes neurais são exemplos de modelos supervisionados. No aprendizado não supervisionado, o algoritmo procura padrões em dados sem rótulos, como no agrupamento pelo método k-médias. No aprendizado por reforço, um agente aprende a agir em um ambiente recebendo recompensas e punições.
+
+As redes neurais artificiais são inspiradas, de forma simplificada, no funcionamento dos neurônios. Cada neurônio artificial calcula uma soma ponderada de suas entradas e aplica uma função de ativação. O treinamento ajusta os pesos por meio do algoritmo de retropropagação e da descida do gradiente. Redes com muitas camadas formam o chamado aprendizado profundo, responsável por grandes avanços em visão computacional e processamento de linguagem natural.
+
+O processamento de linguagem natural trata da interação entre computadores e a linguagem humana. Suas etapas iniciais são muito parecidas com as de um mecanismo de busca: tokenização, conversão para minúsculas, remoção de pontuação, remoção de stopwords, stemming e lematização. Em seguida, os textos podem ser representados por vetores, como no modelo de saco de palavras, no TF-IDF ou em representações densas aprendidas por redes neurais.
+
+Os grandes modelos de linguagem são redes neurais treinadas com enormes volumes de texto e capazes de gerar respostas, resumir documentos, traduzir idiomas e escrever programas. Eles utilizam a arquitetura transformer, baseada no mecanismo de atenção. Apesar dos resultados impressionantes, esses modelos podem produzir informações incorretas e refletir vieses presentes nos dados de treinamento.
+
+A inteligência artificial também levanta questões éticas importantes, como a privacidade dos dados, a transparência das decisões automatizadas, o impacto no mercado de trabalho e a responsabilidade por erros. O desenvolvimento responsável exige avaliação cuidadosa, supervisão humana e atenção à proteção de dados pessoais.
+
+Hoje, a inteligência artificial está presente em assistentes virtuais, sistemas de recomendação, diagnóstico médico por imagens, detecção de fraudes, carros autônomos e automação de atendimento. A tendência é que sua integração com outras áreas da computação continue crescendo nos próximos anos.

@@ -1,0 +1,17 @@
+Algoritmos e Técnicas de Projeto
+
+Um algoritmo é uma sequência finita de instruções bem definidas que resolve um problema ou executa uma tarefa. Na computação, os algoritmos são a base de qualquer programa: desde a ordenação de uma lista de nomes até o cálculo de rotas em um aplicativo de mapas. Um bom algoritmo precisa ser correto, ou seja, produzir a resposta esperada para todas as entradas válidas, e eficiente, consumindo uma quantidade razoável de tempo e de memória.
+
+Existem diversas técnicas clássicas de projeto de algoritmos. A técnica de divisão e conquista divide o problema em subproblemas menores, resolve cada um deles de forma recursiva e combina as soluções. O Merge Sort e o Quick Sort são exemplos conhecidos dessa abordagem. A busca binária também utiliza a ideia de dividir o espaço de busca pela metade a cada passo, alcançando complexidade logarítmica.
+
+A programação dinâmica é indicada quando o problema possui subestrutura ótima e subproblemas sobrepostos. Em vez de recalcular o mesmo subproblema várias vezes, o algoritmo armazena os resultados intermediários em uma tabela. Problemas como a mochila binária, a maior subsequência comum e a distância de edição entre duas palavras são resolvidos com programação dinâmica. A distância de edição, por exemplo, é muito utilizada em corretores ortográficos e em sistemas de busca que toleram erros de digitação.
+
+Os algoritmos gulosos tomam, a cada etapa, a decisão que parece melhor naquele momento, sem reconsiderar escolhas anteriores. Essa estratégia nem sempre produz a solução ótima, mas funciona muito bem em problemas como a árvore geradora mínima, resolvida pelos algoritmos de Kruskal e Prim, e na codificação de Huffman, usada na compressão de dados.
+
+Os algoritmos de busca em grafos, como a busca em largura e a busca em profundidade, permitem explorar estruturas compostas por vértices e arestas. O algoritmo de Dijkstra calcula o menor caminho a partir de uma origem em grafos com pesos não negativos e é aplicado em roteamento de redes e em sistemas de navegação.
+
+No processamento de textos, algoritmos de casamento de padrões têm papel fundamental. A busca ingênua compara o padrão com cada posição do texto e pode ter custo quadrático no pior caso. O algoritmo de Knuth, Morris e Pratt, conhecido como KMP, utiliza uma tabela de prefixos para evitar comparações repetidas, garantindo custo linear em relação ao tamanho do texto e do padrão. O algoritmo de Boyer-Moore e o de Rabin-Karp são outras alternativas, sendo este último baseado em funções hash.
+
+A análise de algoritmos estuda o comportamento do tempo de execução e do uso de memória conforme o tamanho da entrada cresce. A notação assintótica, com O grande, ômega e theta, permite comparar algoritmos de maneira independente do computador utilizado. Um algoritmo de complexidade linear tende a ser muito mais rápido do que um algoritmo quadrático quando a entrada é grande, mesmo que em entradas pequenas a diferença seja imperceptível.
+
+Por fim, a escolha do algoritmo está diretamente ligada à escolha da estrutura de dados. Uma busca em uma lista não ordenada é sequencial, enquanto uma busca em uma tabela hash é, em média, constante. Compreender essa relação é essencial para projetar programas eficientes, escaláveis e confiáveis.

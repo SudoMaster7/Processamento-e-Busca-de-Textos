@@ -1,0 +1,17 @@
+Engenharia de Software
+
+A engenharia de software é a disciplina que aplica princípios de engenharia ao desenvolvimento, à operação e à manutenção de sistemas de software. Seu objetivo é produzir programas de qualidade, dentro do prazo e do orçamento, que atendam às necessidades dos usuários. A área surgiu na década de 1960, durante a chamada crise do software, quando muitos projetos atrasavam, estouravam o orçamento ou simplesmente não funcionavam.
+
+O ciclo de vida do software envolve etapas como levantamento de requisitos, análise, projeto, implementação, testes, implantação e manutenção. Os requisitos funcionais descrevem o que o sistema deve fazer, enquanto os requisitos não funcionais descrevem qualidades como desempenho, segurança, usabilidade e disponibilidade. Um requisito de desempenho, por exemplo, pode exigir que uma consulta seja respondida em menos de um segundo, o que influencia a escolha de algoritmos e estruturas de dados.
+
+Os modelos de processo organizam essas etapas. O modelo cascata segue uma sequência rígida de fases, adequado a projetos com requisitos estáveis. Os modelos iterativos e incrementais entregam o software em partes. As metodologias ágeis, como Scrum e Kanban, valorizam a colaboração com o cliente, a adaptação a mudanças e entregas frequentes de software funcionando. No Scrum, o trabalho é organizado em ciclos curtos chamados sprints, com reuniões diárias, revisão e retrospectiva.
+
+O projeto de software define a arquitetura do sistema e a organização de seus componentes. Princípios como alta coesão e baixo acoplamento orientam a divisão do código em módulos. A modularização facilita a manutenção, os testes e o reaproveitamento de componentes. Em um mecanismo de busca, por exemplo, separar o pré-processamento, a estrutura Trie e o índice invertido em módulos distintos permite reutilizar a Trie em outros programas. Os padrões de projeto, como Singleton, Observer, Strategy e Factory, oferecem soluções reutilizáveis para problemas recorrentes.
+
+Os testes de software verificam se o sistema se comporta como esperado. Os testes unitários avaliam funções e classes isoladamente, os testes de integração verificam a comunicação entre módulos e os testes de sistema avaliam o produto completo. O desenvolvimento orientado a testes propõe escrever os testes antes do código. A integração contínua executa automaticamente os testes a cada alteração enviada ao repositório.
+
+O controle de versão, com ferramentas como o Git, registra o histórico de alterações do código e permite que várias pessoas trabalhem no mesmo projeto. Ramificações, revisões de código e solicitações de mesclagem fazem parte do fluxo de trabalho moderno. A documentação, incluindo um arquivo README com instruções de execução, é fundamental para que outras pessoas consigam utilizar e manter o sistema.
+
+A manutenção representa a maior parte do custo de um software ao longo de sua vida. Ela pode ser corretiva, para corrigir defeitos, adaptativa, para ajustar o sistema a novos ambientes, perfectiva, para melhorar funcionalidades, ou preventiva, para facilitar manutenções futuras. Código legível, bem comentado e organizado reduz significativamente esse custo.
+
+A qualidade de software pode ser avaliada por métricas e normas, considerando confiabilidade, eficiência, usabilidade, manutenibilidade e portabilidade. Engenharia de software, portanto, não se resume a programar: envolve pessoas, processos, ferramentas e decisões técnicas bem fundamentadas.

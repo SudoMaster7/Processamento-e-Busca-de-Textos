@@ -1,0 +1,17 @@
+Estruturas de Dados
+
+Estruturas de dados são formas de organizar e armazenar informações na memória do computador de modo que possam ser acessadas e modificadas com eficiência. A escolha da estrutura correta influencia diretamente o desempenho de um algoritmo, e por isso o estudo de estruturas de dados caminha lado a lado com o estudo de algoritmos.
+
+O vetor, também chamado de array, armazena elementos em posições contíguas de memória. O acesso a um elemento pelo índice é imediato, com custo constante, mas a inserção no meio do vetor exige deslocar os demais elementos. A lista encadeada resolve esse problema ao ligar cada elemento ao próximo por meio de ponteiros, permitindo inserções e remoções rápidas, porém com acesso sequencial.
+
+Pilhas e filas são estruturas lineares com regras de acesso específicas. A pilha segue o princípio do último a entrar ser o primeiro a sair e é usada em chamadas de funções, avaliação de expressões e na busca em profundidade. A fila segue o princípio do primeiro a entrar ser o primeiro a sair e aparece em escalonamento de processos, impressoras compartilhadas e na busca em largura.
+
+As árvores organizam os dados de forma hierárquica. A árvore binária de busca mantém os elementos menores à esquerda e os maiores à direita, permitindo buscas com custo proporcional à altura da árvore. Árvores balanceadas, como a AVL e a rubro-negra, garantem altura logarítmica. As árvores B são muito utilizadas em bancos de dados e sistemas de arquivos, pois reduzem o número de acessos ao disco.
+
+A Trie, também conhecida como árvore de prefixos ou árvore digital, é uma estrutura especializada para armazenar cadeias de caracteres. Cada nó representa um caractere e cada caminho da raiz até um nó marcado representa uma palavra. Palavras com prefixos comuns compartilham os mesmos nós iniciais, o que torna a Trie ideal para autocomplete, corretores ortográficos e roteamento de endereços IP. A busca de uma palavra de tamanho m custa O(m), independentemente da quantidade de palavras armazenadas. Em contrapartida, a Trie tradicional pode consumir muita memória, já que cada nó guarda referências para seus filhos. A Trie comprimida, ou árvore Patricia, reduz esse problema ao juntar em uma única aresta as cadeias de nós que possuem apenas um filho.
+
+A tabela hash associa chaves a valores por meio de uma função hash, que transforma a chave em uma posição da tabela. Em média, buscas, inserções e remoções custam tempo constante. Quando duas chaves diferentes são mapeadas para a mesma posição ocorre uma colisão, que pode ser tratada por encadeamento, armazenando uma lista em cada posição, ou por endereçamento aberto, procurando outra posição livre. Um fator de carga alto aumenta as colisões, e por isso as tabelas são redimensionadas periodicamente.
+
+Os grafos representam relações entre objetos e podem ser implementados por matriz de adjacência ou lista de adjacência. Os heaps, por sua vez, são árvores completas que mantêm o maior ou o menor elemento sempre na raiz e servem de base para filas de prioridade e para o algoritmo Heap Sort.
+
+Conhecer as estruturas de dados permite ao programador escolher a ferramenta adequada para cada problema. Um mecanismo de busca, por exemplo, combina tabelas hash, árvores de prefixos e listas de documentos para responder consultas de forma rápida mesmo com grandes volumes de texto.

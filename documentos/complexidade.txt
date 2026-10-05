@@ -1,0 +1,17 @@
+Complexidade de Algoritmos
+
+A análise de complexidade procura responder uma pergunta simples: como o custo de um algoritmo cresce à medida que o tamanho da entrada aumenta? Esse custo pode ser medido em tempo de execução, em quantidade de operações elementares ou em espaço de memória utilizado. A análise permite prever o comportamento de um programa antes mesmo de executá-lo com grandes volumes de dados.
+
+A notação O grande descreve um limite superior para o crescimento da função de custo. Dizer que um algoritmo é O(n) significa que, para entradas suficientemente grandes, o tempo cresce no máximo de forma proporcional ao tamanho da entrada. A notação ômega descreve um limite inferior e a notação theta descreve um limite justo, quando os limites superior e inferior coincidem.
+
+As classes de complexidade mais comuns são a constante, a logarítmica, a linear, a linearítmica, a quadrática, a cúbica e a exponencial. O acesso a um elemento de vetor pelo índice é constante. A busca binária é logarítmica. A busca sequencial é linear. Os bons algoritmos de ordenação por comparação, como o Merge Sort e o Heap Sort, são linearítmicos. O Bubble Sort e o Insertion Sort são quadráticos no pior caso. Algoritmos de força bruta que testam todas as combinações possíveis costumam ser exponenciais.
+
+É importante diferenciar o melhor caso, o caso médio e o pior caso. O Quick Sort, por exemplo, tem desempenho linearítmico no caso médio, mas pode se tornar quadrático no pior caso, quando o pivô escolhido é sempre o menor ou o maior elemento. A tabela hash possui busca constante no caso médio, mas em um cenário com muitas colisões a busca pode degradar para linear.
+
+A análise amortizada considera o custo médio de uma sequência de operações. Um vetor dinâmico que dobra de tamanho quando fica cheio tem, ocasionalmente, uma inserção cara, mas o custo amortizado de cada inserção continua constante.
+
+Além da análise teórica, a análise empírica mede o tempo real de execução com ferramentas de medição de tempo. Os resultados empíricos devem ser interpretados com cuidado, pois dependem do processador, da memória, da linguagem de programação e de outros processos em execução. Ainda assim, quando o experimento é repetido com entradas de tamanhos crescentes, é possível observar se o crescimento do tempo confirma a previsão teórica.
+
+No processamento de textos, a complexidade aparece em todas as etapas. A tokenização percorre o texto uma vez e é linear no número de caracteres. A construção de um índice invertido é linear no número de palavras, considerando que cada acesso à tabela hash é constante em média. A inserção de uma palavra de tamanho m em uma Trie custa O(m), e a busca por prefixo custa O(m) para chegar ao nó do prefixo, mais o custo de percorrer todos os nós descendentes para recuperar as palavras.
+
+Compreender a complexidade permite tomar decisões de projeto conscientes. Muitas vezes, uma estrutura que consome um pouco mais de memória, como uma Trie ou uma tabela hash, oferece ganhos expressivos de tempo. Essa troca entre tempo e espaço é uma das ideias centrais da ciência da computação.

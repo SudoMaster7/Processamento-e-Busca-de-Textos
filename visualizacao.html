@@ -1,0 +1,1471 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<!--CONTEUDO_INICIO-->
+<title>Laboratório de Busca em Textos</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&display=swap">
+<style>
+/* Layout: coluna de leitura (máx. 1120px) com barra de seções fixa no topo;
+   cada seção = explicação curta à esquerda/acima + uma "bancada" interativa que roda o algoritmo de verdade. */
+:root {
+  --bg: #EDF0F4;
+  --surface: #FFFFFF;
+  --surface-2: #F5F7FA;
+  --ink: #132033;
+  --muted: #5A6779;
+  --line: #D5DCE5;
+  --accent: #1F4FD1;
+  --accent-ink: #FFFFFF;
+  --accent-soft: #E1E8FC;
+  --mark: #FFE07A;
+  --mark-ink: #132033;
+  --ok: #1B7F47;
+  --ok-soft: #DCF1E4;
+  --bad: #C03838;
+  --bad-soft: #FAE2E2;
+  --s1: #2a78d6;
+  --s2: #eb6834;
+  --s3: #1baf7a;
+  --f-display: "Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
+  --f-body: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+  --f-mono: "IBM Plex Mono", ui-monospace, Consolas, "Courier New", monospace;
+  --r: 10px;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0E141C; --surface: #161F2A; --surface-2: #1C2734; --ink: #E4EAF2; --muted: #93A1B3; --line: #2B3747;
+    --accent: #87A3FF; --accent-ink: #0E141C; --accent-soft: #1F2B4B; --mark: #6A5700; --mark-ink: #FFF3C4;
+    --ok: #5BC98B; --ok-soft: #173826; --bad: #F27C7C; --bad-soft: #3E1C1F;
+    --s1: #3987e5; --s2: #d95926; --s3: #199e70;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0E141C; --surface: #161F2A; --surface-2: #1C2734; --ink: #E4EAF2; --muted: #93A1B3; --line: #2B3747;
+  --accent: #87A3FF; --accent-ink: #0E141C; --accent-soft: #1F2B4B; --mark: #6A5700; --mark-ink: #FFF3C4;
+  --ok: #5BC98B; --ok-soft: #173826; --bad: #F27C7C; --bad-soft: #3E1C1F;
+  --s1: #3987e5; --s2: #d95926; --s3: #199e70;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html { scroll-behavior: smooth; scroll-padding-top: 64px; }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+body {
+  margin: 0; background: var(--bg); color: var(--ink);
+  font-family: var(--f-body); font-size: 15px; line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+.wrap { max-width: 1120px; margin: 0 auto; padding-inline: 20px; }
+h1, h2, h3 { font-family: var(--f-display); text-wrap: balance; margin: 0; letter-spacing: -0.01em; }
+h2 { font-size: 30px; line-height: 1.15; font-weight: 700; }
+h3 { font-size: 17px; font-weight: 700; }
+p { margin: 0; }
+code, .mono { font-family: var(--f-mono); font-size: 0.92em; }
+a { color: var(--accent); }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 4px; }
+
+/* ---------- Hero ---------- */
+.hero { padding-block: 48px 36px; }
+.hero-grid { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); gap: 40px; align-items: start; }
+.eyebrow { font-family: var(--f-mono); font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+.hero h1 { font-size: 48px; line-height: 1.02; font-weight: 800; margin-block: 12px 18px; }
+.hero h1 em { font-style: normal; color: var(--accent); }
+.hero .lead { font-size: 17px; max-width: 34em; color: var(--ink); }
+.hero .credit { margin-top: 18px; font-size: 13px; color: var(--muted); }
+.hero-files { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 18px; }
+.hero-files code { background: var(--surface); border: 1px solid var(--line); padding: 2px 8px; border-radius: 6px; font-size: 12px; }
+
+/* ---------- Navegação ---------- */
+.toc {
+  position: sticky; top: env(safe-area-inset-top, 0px); z-index: 20;
+  background: color-mix(in srgb, var(--bg) 88%, transparent);
+  backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+  border-block: 1px solid var(--line);
+}
+.toc .wrap { display: flex; gap: 4px; overflow-x: auto; padding-block: 8px; scrollbar-width: none; }
+.toc .wrap::-webkit-scrollbar { display: none; }
+.toc a {
+  flex: none; text-decoration: none; color: var(--muted); font-size: 13px; font-weight: 500;
+  padding: 6px 12px; border-radius: 999px; white-space: nowrap;
+}
+.toc a:hover { color: var(--ink); background: var(--surface); }
+.toc a.ativo { color: var(--accent-ink); background: var(--accent); }
+
+/* ---------- Seções ---------- */
+section.sec { padding-block: 56px 8px; }
+.sec-head { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 12px 40px; align-items: end; margin-bottom: 22px; }
+.sec-head .eyebrow { grid-column: 1 / -1; }
+.sec-head p { color: var(--muted); max-width: 36em; }
+.tag { display: inline-block; font-family: var(--f-mono); font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; padding: 2px 8px; border-radius: 4px; background: var(--accent-soft); color: var(--accent); margin-right: 8px; }
+
+.bench { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); padding: 20px; }
+.bench + .bench { margin-top: 16px; }
+.bench-title { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 6px 16px; margin-bottom: 14px; }
+.bench-title .src { font-family: var(--f-mono); font-size: 12px; color: var(--muted); }
+.cols { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 20px; }
+.cols > * { min-width: 0; }
+.note { font-size: 13px; color: var(--muted); }
+
+/* ---------- Controles ---------- */
+.controls { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+input[type="text"], textarea, select {
+  font: inherit; color: var(--ink); background: var(--surface-2); border: 1px solid var(--line);
+  border-radius: 8px; padding: 8px 12px; min-width: 0;
+}
+input[type="text"] { font-family: var(--f-mono); font-size: 14px; }
+input[type="text"]:focus, textarea:focus, select:focus { outline: 2px solid var(--accent); outline-offset: -1px; }
+textarea { width: 100%; resize: vertical; line-height: 1.55; font-size: 14px; }
+.grow { flex: 1 1 180px; }
+button {
+  font: inherit; font-size: 13px; font-weight: 600; cursor: pointer; border-radius: 8px;
+  padding: 8px 14px; border: 1px solid var(--line); background: var(--surface-2); color: var(--ink);
+}
+button:hover { border-color: var(--accent); }
+button.pri { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+button.pri:hover { filter: brightness(1.08); }
+button.lnk { background: none; border: none; padding: 4px 6px; color: var(--accent); font-weight: 500; }
+button .k { font-family: var(--f-mono); opacity: 0.7; margin-right: 4px; }
+.check { display: inline-flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 500; cursor: pointer; }
+.check input { width: 16px; height: 16px; accent-color: var(--accent); }
+
+/* ---------- Chips / tokens ---------- */
+.chips { display: flex; flex-wrap: wrap; gap: 5px; }
+.chip {
+  font-family: var(--f-mono); font-size: 12.5px; padding: 2px 8px; border-radius: 5px;
+  background: var(--surface-2); border: 1px solid var(--line); white-space: nowrap;
+}
+.chip.ok { background: var(--ok-soft); border-color: transparent; color: var(--ink); }
+.chip.out { color: var(--bad); background: var(--bad-soft); border-color: transparent; text-decoration: line-through; text-decoration-thickness: 1.5px; }
+.chip.acc { background: var(--accent-soft); border-color: transparent; color: var(--accent); }
+.chip .suf { color: var(--bad); text-decoration: line-through; opacity: 0.85; }
+button.chip { font-weight: 500; cursor: pointer; }
+mark { background: var(--mark); color: var(--mark-ink); border-radius: 3px; padding: 0 2px; }
+
+/* ---------- Hero: busca ao vivo ---------- */
+.live { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 18px; box-shadow: 0 1px 0 var(--line), 0 18px 40px -28px rgba(19, 32, 51, 0.45); }
+.live label { display: block; font-size: 12px; color: var(--muted); margin-bottom: 6px; }
+.live input { width: 100%; font-size: 18px; padding: 10px 14px; }
+.live-list { list-style: none; margin: 10px 0 0; padding: 0; }
+.live-list li button {
+  width: 100%; display: flex; justify-content: space-between; gap: 12px; align-items: baseline;
+  background: none; border: none; border-radius: 6px; padding: 6px 8px; font-weight: 400; text-align: left;
+}
+.live-list li button:hover, .live-list li button.sel { background: var(--accent-soft); }
+.live-list .t { font-family: var(--f-mono); font-size: 14px; }
+.live-list .t b { color: var(--accent); }
+.live-list .n { font-size: 12px; color: var(--muted); white-space: nowrap; }
+.live-meta { display: flex; justify-content: space-between; gap: 8px; font-size: 12px; color: var(--muted); margin-top: 8px; border-top: 1px dashed var(--line); padding-top: 8px; flex-wrap: wrap; }
+.live-docs { margin-top: 10px; font-size: 13px; }
+
+/* ---------- Pipeline ---------- */
+.flow { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 28px; position: relative; }
+.stage { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); padding: 14px; position: relative; text-decoration: none; color: inherit; display: block; }
+.stage:hover { border-color: var(--accent); }
+.stage:not(:last-child)::after {
+  content: "→"; position: absolute; right: -22px; top: 50%; transform: translateY(-50%);
+  color: var(--muted); font-size: 18px;
+}
+.stage .n { font-family: var(--f-mono); font-size: 11px; color: var(--muted); }
+.stage h3 { font-size: 15px; margin-block: 2px 6px; }
+.stage p { font-size: 13px; color: var(--muted); line-height: 1.45; }
+.stage code { font-size: 11.5px; color: var(--accent); }
+.routes { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin-top: 18px; }
+.route { border: 1px dashed var(--line); border-radius: var(--r); padding: 12px 14px; font-size: 13px; }
+.route b { font-family: var(--f-display); font-size: 15px; display: block; margin-bottom: 4px; }
+.route .path { font-family: var(--f-mono); font-size: 12px; color: var(--accent); }
+
+/* ---------- Pré-processamento ---------- */
+.stages { display: grid; gap: 0; margin-top: 16px; }
+.pstage { display: grid; grid-template-columns: 210px minmax(0, 1fr); gap: 16px; padding-block: 14px; border-top: 1px solid var(--line); }
+.pstage .lbl { font-weight: 600; font-size: 14px; }
+.pstage .lbl small { display: block; font-weight: 400; color: var(--muted); font-size: 12px; margin-top: 2px; }
+.pstage .lbl .cnt { font-family: var(--f-mono); color: var(--accent); font-size: 12px; }
+.ptext { font-family: var(--f-mono); font-size: 13px; line-height: 1.7; word-break: break-word; }
+.ptext .rm { background: var(--bad-soft); color: var(--bad); border-radius: 2px; }
+
+/* ---------- Trie (SVG) ---------- */
+.svgbox { overflow-x: auto; border: 1px solid var(--line); border-radius: 8px; background: var(--surface-2); margin-top: 14px; }
+.svgbox svg { display: block; }
+.tn circle.b { fill: var(--surface); stroke: var(--line); stroke-width: 1.5; transition: fill .2s, stroke .2s; }
+.tn text { font-family: var(--f-mono); font-size: 12px; fill: var(--ink); text-anchor: middle; dominant-baseline: central; }
+.tn .ring { fill: none; stroke: var(--accent); stroke-width: 1.5; }
+.tn.fim circle.b { stroke: var(--accent); fill: var(--accent-soft); }
+.tn.prefim .ring { display: none; }
+.tn.prefim circle.b { fill: var(--surface); stroke: var(--line); }
+.tn .wl { font-size: 11px; fill: var(--muted); text-anchor: start; }
+.tn.on circle.b { stroke: var(--accent); stroke-width: 2.5; }
+.tn.cur circle.b { fill: var(--mark); stroke: var(--ink); stroke-width: 2; }
+.tn.cur text { fill: var(--mark-ink); }
+.tn.novo circle.b { fill: var(--ok-soft); stroke: var(--ok); stroke-width: 2.5; }
+.tn.sub circle.b { stroke: var(--s2); stroke-width: 2.5; }
+.tn.achado circle.b { fill: var(--ok); stroke: var(--ok); }
+.tn.achado text { fill: var(--surface); }
+.tn.hide, .te.hide { opacity: 0; }
+.tn, .te { transition: opacity .25s; }
+.te { fill: none; stroke: var(--line); stroke-width: 1.5; }
+.te.on { stroke: var(--accent); stroke-width: 2.5; }
+.te.sub { stroke: var(--s2); stroke-width: 2; }
+.ghost circle { fill: var(--bad-soft); stroke: var(--bad); stroke-dasharray: 3 3; stroke-width: 1.5; }
+.ghost text { fill: var(--bad); font-family: var(--f-mono); font-size: 12px; text-anchor: middle; dominant-baseline: central; }
+.legend { display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: 12px; color: var(--muted); margin-top: 10px; }
+.legend span { display: inline-flex; align-items: center; gap: 6px; }
+.dot { width: 12px; height: 12px; border-radius: 50%; border: 2px solid var(--line); background: var(--surface); display: inline-block; }
+.dot.fim { border-color: var(--accent); background: var(--accent-soft); box-shadow: 0 0 0 2px var(--surface-2), 0 0 0 3px var(--accent); }
+.dot.on { border-color: var(--accent); }
+.dot.novo { border-color: var(--ok); background: var(--ok-soft); }
+.dot.sub { border-color: var(--s2); }
+.dot.miss { border-color: var(--bad); border-style: dashed; background: var(--bad-soft); }
+
+.log { list-style: none; margin: 0; padding: 0; font-size: 13px; max-height: 280px; overflow: auto; counter-reset: passo; }
+.log li { padding: 6px 0 6px 30px; border-bottom: 1px solid var(--line); position: relative; counter-increment: passo; }
+.log li::before { content: counter(passo); position: absolute; left: 0; top: 6px; font-family: var(--f-mono); font-size: 11px; color: var(--muted); width: 22px; text-align: right; }
+.log li.res { font-weight: 600; }
+.log li.res.ok { color: var(--ok); }
+.log li.res.bad { color: var(--bad); }
+.log:empty::after { content: "Escolha uma operação acima para ver cada passo aqui."; color: var(--muted); display: block; padding-block: 8px; }
+
+.stats { display: flex; flex-wrap: wrap; gap: 8px 22px; font-size: 13px; color: var(--muted); }
+.stats b { font-family: var(--f-mono); color: var(--ink); font-weight: 600; font-variant-numeric: tabular-nums; }
+
+/* ---------- Terminal ---------- */
+.term {
+  font-family: var(--f-mono); font-size: 12.5px; line-height: 1.55; background: var(--surface-2);
+  border: 1px solid var(--line); border-radius: 8px; padding: 12px 14px; margin: 0;
+  height: 300px; overflow: auto; white-space: pre-wrap; word-break: break-word;
+}
+.term .p { color: var(--accent); }
+.term .ok { color: var(--ok); }
+.term .bad { color: var(--bad); }
+.term .dim { color: var(--muted); }
+.sug { list-style: none; margin: 8px 0 0; padding: 0; display: flex; flex-wrap: wrap; gap: 5px; min-height: 28px; }
+
+/* ---------- Hash ---------- */
+.htab { display: grid; grid-template-columns: repeat(auto-fill, minmax(118px, 1fr)); gap: 6px; margin-top: 14px; }
+.slot { border: 1px solid var(--line); border-radius: 7px; padding: 6px 8px; background: var(--surface-2); min-height: 62px; transition: background .2s, border-color .2s; }
+.slot .i { font-family: var(--f-mono); font-size: 11px; color: var(--muted); }
+.slot .t { font-family: var(--f-mono); font-size: 13px; font-weight: 600; word-break: break-all; }
+.slot .v { font-size: 11px; color: var(--muted); }
+.slot.vazio .t { color: var(--muted); font-weight: 400; }
+.slot.probe { border-color: var(--bad); background: var(--bad-soft); }
+.slot.alvo { border-color: var(--ok); background: var(--ok-soft); }
+.slot.cur { border-color: var(--ink); background: var(--mark); }
+.slot.cur .t, .slot.cur .i, .slot.cur .v { color: var(--mark-ink); }
+.calc { font-family: var(--f-mono); font-size: 12.5px; background: var(--surface-2); border-radius: 8px; padding: 10px 12px; margin-top: 12px; overflow-x: auto; white-space: pre; line-height: 1.6; }
+.fill { height: 6px; border-radius: 3px; background: var(--surface-2); border: 1px solid var(--line); overflow: hidden; width: 140px; display: inline-block; vertical-align: middle; }
+.fill i { display: block; height: 100%; background: var(--accent); }
+
+.bars { display: grid; gap: 6px; margin-top: 10px; }
+.bar { display: grid; grid-template-columns: 170px minmax(0, 1fr) 44px; gap: 10px; align-items: center; font-size: 13px; }
+.bar .nm { font-family: var(--f-mono); font-size: 12.5px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.bar .tr { height: 14px; background: var(--surface-2); border-radius: 0 4px 4px 0; }
+.bar .tr i { display: block; height: 100%; background: var(--accent); border-radius: 0 4px 4px 0; min-width: 2px; }
+.bar .vl { font-family: var(--f-mono); font-size: 12.5px; text-align: right; font-variant-numeric: tabular-nums; }
+
+table { border-collapse: collapse; width: 100%; font-size: 13px; }
+th, td { text-align: left; padding: 7px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+th { font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); font-weight: 600; }
+td.num, th.num { text-align: right; font-family: var(--f-mono); font-variant-numeric: tabular-nums; }
+.tscroll { overflow-x: auto; }
+tr.clk { cursor: pointer; }
+tr.clk:hover td { background: var(--surface-2); }
+
+/* ---------- Mecanismo ---------- */
+.kpis { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 1px; background: var(--line); border: 1px solid var(--line); border-radius: var(--r); overflow: hidden; margin-bottom: 16px; }
+.kpi { background: var(--surface); padding: 12px 14px; }
+.kpi .v { font-family: var(--f-display); font-size: 26px; font-weight: 700; font-variant-numeric: tabular-nums; line-height: 1.1; }
+.kpi .l { font-size: 12px; color: var(--muted); }
+.tabs { display: flex; flex-wrap: wrap; gap: 4px; border-bottom: 1px solid var(--line); margin-bottom: 16px; }
+.tabs button { border: none; background: none; border-radius: 6px 6px 0 0; padding: 9px 12px; color: var(--muted); border-bottom: 2px solid transparent; margin-bottom: -1px; }
+.tabs button[aria-selected="true"] { color: var(--ink); border-bottom-color: var(--accent); }
+.tabs button:hover { color: var(--ink); }
+.resline { font-size: 14px; margin-block: 14px 8px; }
+.resline .tm { font-family: var(--f-mono); font-size: 12px; color: var(--muted); margin-left: 6px; }
+.via { font-family: var(--f-mono); font-size: 12px; color: var(--muted); margin-top: 10px; }
+.snip { font-size: 13px; padding: 10px 0; border-bottom: 1px solid var(--line); }
+.snip .h { display: flex; gap: 10px; align-items: baseline; flex-wrap: wrap; font-family: var(--f-mono); font-size: 12.5px; margin-bottom: 2px; }
+.snip .h b { font-weight: 600; }
+details.doc { border-bottom: 1px solid var(--line); }
+details.doc summary { cursor: pointer; padding: 8px 0; display: flex; gap: 12px; align-items: baseline; flex-wrap: wrap; font-size: 13px; }
+details.doc summary .d { font-family: var(--f-mono); color: var(--muted); width: 32px; }
+details.doc summary .nm { font-family: var(--f-mono); font-weight: 600; }
+details.doc .body { font-size: 13px; color: var(--muted); white-space: pre-wrap; max-height: 260px; overflow: auto; padding: 0 0 12px 44px; }
+dl.st { display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: 4px 20px; margin: 0; font-size: 13px; }
+dl.st dt { color: var(--muted); }
+dl.st dd { margin: 0; font-family: var(--f-mono); font-variant-numeric: tabular-nums; }
+
+/* ---------- KMP ---------- */
+.kgrid { overflow-x: auto; padding-bottom: 6px; margin-top: 14px; }
+.krow { display: flex; height: 32px; }
+.krow.idx { height: 18px; }
+.kc { flex: none; width: 28px; height: 28px; margin-right: 2px; display: grid; place-items: center; font-family: var(--f-mono); font-size: 14px; border-radius: 5px; background: var(--surface-2); border: 1px solid var(--line); }
+.krow.idx .kc { height: 16px; background: none; border: none; font-size: 10px; color: var(--muted); }
+.kc.sp { color: var(--muted); }
+.kc.casado { background: var(--ok-soft); border-color: var(--ok); }
+.kc.cmp-ok { background: var(--ok); border-color: var(--ok); color: var(--surface); }
+.kc.cmp-bad { background: var(--bad); border-color: var(--bad); color: var(--surface); }
+.kc.achado { box-shadow: inset 0 -3px 0 var(--accent); }
+.kc.vazio { visibility: hidden; }
+.krow.pat { transition: padding-left .25s; }
+@media (prefers-reduced-motion: reduce) { .krow.pat { transition: none; } .tn, .te, .slot { transition: none; } }
+.lps { display: inline-grid; grid-auto-flow: column; gap: 2px; margin-top: 6px; }
+.lps div { width: 34px; text-align: center; font-family: var(--f-mono); font-size: 12px; padding: 3px 0; border-radius: 4px; }
+.lps .h { color: var(--muted); font-size: 10px; }
+.lps .c { background: var(--surface-2); border: 1px solid var(--line); }
+.lps .v { background: var(--accent-soft); color: var(--accent); font-weight: 600; }
+.lps .v.use { background: var(--mark); color: var(--mark-ink); }
+.kmsg { margin-top: 12px; min-height: 48px; font-size: 14px; padding: 10px 12px; border-radius: 8px; background: var(--surface-2); }
+.duel { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 10px; margin-top: 12px; }
+.duel div { border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; }
+.duel b { font-family: var(--f-display); font-size: 24px; font-variant-numeric: tabular-nums; display: block; }
+.duel span { font-size: 12px; color: var(--muted); }
+
+/* ---------- Complexidade / gráfico ---------- */
+.ctab td:nth-child(2) { font-family: var(--f-mono); color: var(--accent); white-space: nowrap; }
+.chart-wrap { position: relative; }
+.chart-wrap svg { width: 100%; height: auto; display: block; overflow: visible; }
+.ax { stroke: var(--line); stroke-width: 1; }
+.grid-l { stroke: var(--line); stroke-width: 1; stroke-dasharray: 2 4; }
+.tick { fill: var(--muted); font-size: 11px; font-family: var(--f-mono); }
+.dlab { fill: var(--ink); font-size: 12px; font-family: var(--f-body); font-weight: 500; }
+.xhair { stroke: var(--muted); stroke-width: 1; }
+.tip { position: absolute; pointer-events: none; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; font-size: 12px; box-shadow: 0 6px 20px -10px rgba(0,0,0,.35); min-width: 170px; }
+.tip .r { display: flex; justify-content: space-between; gap: 14px; align-items: center; }
+.tip .r span:first-child { display: inline-flex; align-items: center; gap: 6px; }
+.tip i { width: 10px; height: 3px; border-radius: 2px; display: inline-block; }
+.tip .v { font-family: var(--f-mono); font-variant-numeric: tabular-nums; }
+.lg { display: flex; flex-wrap: wrap; gap: 6px 18px; font-size: 12px; color: var(--muted); }
+.lg span { display: inline-flex; align-items: center; gap: 6px; }
+.lg i { width: 16px; height: 3px; border-radius: 2px; display: inline-block; }
+.seg { display: inline-flex; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
+.seg button { border: none; border-radius: 0; background: var(--surface-2); }
+.seg button[aria-pressed="true"] { background: var(--accent); color: var(--accent-ink); }
+
+footer { padding-block: 48px; color: var(--muted); font-size: 13px; }
+
+/* ---------- Responsivo ---------- */
+@media (max-width: 900px) {
+  .hero-grid, .sec-head, .cols { grid-template-columns: minmax(0, 1fr); }
+  .flow { grid-template-columns: minmax(0, 1fr); gap: 22px; }
+  .stage:not(:last-child)::after { content: "↓"; right: auto; left: 50%; top: auto; bottom: -21px; transform: translateX(-50%); }
+  .routes { grid-template-columns: minmax(0, 1fr); }
+  .kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .hero h1 { font-size: 38px; }
+}
+@media (max-width: 560px) {
+  .wrap { padding-inline: 16px; }
+  .pstage { grid-template-columns: minmax(0, 1fr); gap: 6px; }
+  .bar { grid-template-columns: 110px minmax(0, 1fr) 36px; }
+  h2 { font-size: 25px; }
+  .bench { padding: 14px; }
+  .duel { grid-template-columns: minmax(0, 1fr); }
+}
+</style>
+</head>
+<body>
+<header class="hero">
+  <div class="wrap hero-grid">
+    <div>
+      <div class="eyebrow">Trabalho Prático A1 · Processamento e Busca de Textos</div>
+      <h1>Laboratório de <em>Busca</em> em Textos</h1>
+      <p class="lead">Uma Trie própria, um índice invertido em tabela hash e o algoritmo KMP, aplicados aos 10 documentos de computação do projeto. Cada conceito tem uma bancada onde você insere, busca e acompanha o algoritmo passo a passo.</p>
+      <p class="credit">Universidade Veiga de Almeida · Análise e Otimização de Sistemas · Prof. André Lucio</p>
+      <div class="hero-files">
+        <code>trie.py</code><code>preprocessamento.py</code><code>indice_invertido.py</code><code>kmp.py</code><code>autocomplete.py</code><code>main.py</code><code>experimento_escala.py</code>
+      </div>
+    </div>
+    <div class="live" aria-live="polite">
+      <label for="hero-q">Digite um prefixo: a Trie sugere termos e o índice diz onde estão</label>
+      <input type="text" id="hero-q" value="comp" autocomplete="off" spellcheck="false">
+      <ul class="live-list" id="hero-list"></ul>
+      <div class="live-docs" id="hero-docs"></div>
+      <div class="live-meta"><span id="hero-meta"></span><span>igual à opção 2 do <code>main.py</code></span></div>
+    </div>
+  </div>
+</header>
+
+<nav class="toc" aria-label="Seções">
+  <div class="wrap">
+    <a href="#visao">Visão geral</a>
+    <a href="#preproc">Pré-processamento</a>
+    <a href="#trie">Trie</a>
+    <a href="#autocomplete">Autocomplete</a>
+    <a href="#hash">Hash e índice invertido</a>
+    <a href="#motor">Mecanismo de busca</a>
+    <a href="#kmp">KMP</a>
+    <a href="#complexidade">Complexidade</a>
+  </div>
+</nav>
+
+<main>
+<!-- ===================== VISÃO GERAL ===================== -->
+<section class="sec" id="visao">
+  <div class="wrap">
+    <div class="sec-head">
+      <div class="eyebrow">Como as peças se encaixam</div>
+      <h2>Do arquivo .txt até a resposta da consulta</h2>
+      <p>O <code>main.py</code> constrói tudo uma vez, nesta ordem. Depois, cada tipo de consulta usa a estrutura mais adequada.</p>
+    </div>
+    <div class="flow">
+      <a class="stage" href="#motor"><div class="n">etapa 1</div><h3>Documentos</h3><p>Lê todos os <code>.txt</code> de <code>documentos/</code>, sem nomes fixos no código.</p></a>
+      <a class="stage" href="#preproc"><div class="n">etapa 2</div><h3>Pré-processamento</h3><p>Minúsculas, sem pontuação, tokens, sem stopwords, stemming opcional.</p></a>
+      <a class="stage" href="#hash"><div class="n">etapa 3</div><h3>Índice invertido</h3><p><code>termo → {doc: freq}</code> num <code>dict</code>, que é uma tabela hash.</p></a>
+      <a class="stage" href="#hash"><div class="n">etapa 4</div><h3>Vocabulário</h3><p>As chaves do índice: cada termo distinto uma única vez.</p></a>
+      <a class="stage" href="#trie"><div class="n">etapa 5</div><h3>Trie</h3><p>O vocabulário é inserido na mesma Trie da Parte I.</p></a>
+    </div>
+    <div class="routes">
+      <div class="route"><b>Buscar palavra</b><span class="path">consulta → pré-proc → hash</span><br>Acesso direto à chave do índice. O(1) em média.</div>
+      <div class="route"><b>Buscar por prefixo</b><span class="path">prefixo → Trie → hash</span><br>A Trie lista os termos; o índice dá os documentos de cada um.</div>
+      <div class="route"><b>Buscar sequência</b><span class="path">frase → KMP no texto original</span><br>Encontra trechos exatos, inclusive com stopwords. O(n + m).</div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== PRÉ-PROCESSAMENTO ===================== -->
+<section class="sec" id="preproc">
+  <div class="wrap">
+    <div class="sec-head">
+      <div class="eyebrow"><span class="tag">Parte II</span>preprocessamento.py</div>
+      <h2>Pré-processamento: de texto livre a termos</h2>
+      <p>Edite o texto ou carregue um trecho de outro documento. Cada linha abaixo mostra o resultado de uma etapa da função <code>preprocessar()</code>.</p>
+    </div>
+    <div class="bench">
+      <div class="controls">
+        <label for="pp-doc" class="note">Trecho de</label>
+        <select id="pp-doc"></select>
+        <label class="check"><input type="checkbox" id="pp-stem" checked> Stemming (opcional, <code>--stemming</code>)</label>
+      </div>
+      <textarea id="pp-text" rows="4" style="margin-top:12px" spellcheck="false"></textarea>
+      <div class="stages" id="pp-out"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== TRIE ===================== -->
+<section class="sec" id="trie">
+  <div class="wrap">
+    <div class="sec-head">
+      <div class="eyebrow"><span class="tag">Parte I</span>trie.py · classes NoTrie e Trie</div>
+      <h2>A Trie, nó por nó</h2>
+      <p>Cada nó guarda um caractere (como chave do dicionário <code>filhos</code>) e a marca <code>fim_de_palavra</code>. Palavras com o mesmo começo compartilham o caminho. Comece com as 8 palavras do enunciado e teste inserção, busca exata e busca por prefixo.</p>
+    </div>
+    <div class="bench">
+      <div class="controls">
+        <input type="text" id="tv-in" class="grow" value="computar" autocomplete="off" spellcheck="false" aria-label="Palavra ou prefixo">
+        <button class="pri" id="tv-ins">Inserir</button>
+        <button id="tv-busca">Buscar palavra</button>
+        <button id="tv-pref">Buscar prefixo</button>
+        <button class="lnk" id="tv-reset">Restaurar exemplo</button>
+      </div>
+      <div class="controls" style="margin-top:8px">
+        <span class="note">Teste rápido:</span>
+        <button class="chip" data-tv="ins:compra">inserir “compra”</button>
+        <button class="chip" data-tv="busca:compila">buscar “compila”</button>
+        <button class="chip" data-tv="busca:programação">buscar “programação”</button>
+        <button class="chip" data-tv="pref:proc">prefixo “proc”</button>
+        <button class="chip" data-tv="ins:comp">inserir “comp”</button>
+      </div>
+      <div class="svgbox" id="tv-box"></div>
+      <div class="legend">
+        <span><i class="dot"></i>nó</span>
+        <span><i class="dot fim"></i>fim_de_palavra = True</span>
+        <span><i class="dot on"></i>caminho percorrido</span>
+        <span><i class="dot novo"></i>nó criado agora</span>
+        <span><i class="dot sub"></i>visitado na DFS do prefixo</span>
+        <span><i class="dot miss"></i>caractere ausente</span>
+      </div>
+      <div class="cols" style="margin-top:16px">
+        <div>
+          <div class="bench-title"><h3>Passo a passo</h3><span class="stats"><span>palavras <b id="tv-np">0</b></span><span>nós <b id="tv-nn">0</b></span></span></div>
+          <ol class="log" id="tv-log"></ol>
+        </div>
+        <div>
+          <div class="bench-title"><h3>Resultado</h3></div>
+          <div id="tv-res" class="chips"></div>
+          <p class="note" style="margin-top:12px">Inserção e busca exata custam <b>O(m)</b>, com m = tamanho da palavra, não importa quantas palavras existam. A busca por prefixo custa <b>O(p + n)</b>: desce p níveis e percorre os n nós da subárvore com uma pilha (DFS iterativa), empilhando os filhos em ordem alfabética reversa.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== AUTOCOMPLETE ===================== -->
+<section class="sec" id="autocomplete">
+  <div class="wrap">
+    <div class="sec-head">
+      <div class="eyebrow"><span class="tag">Parte I</span>autocomplete.py · palavras.txt</div>
+      <h2>O programa de autocomplete</h2>
+      <p>A mesma Trie, agora com as palavras de <code>palavras.txt</code>. Os três botões são as opções do menu do programa; a saída é a mesma que aparece no terminal.</p>
+    </div>
+    <div class="bench">
+      <div class="bench-title"><div class="stats" id="ac-stats"></div><span class="src">python autocomplete.py</span></div>
+      <div class="cols">
+        <div>
+          <div class="controls">
+            <input type="text" id="ac-in" class="grow" value="algo" autocomplete="off" spellcheck="false" aria-label="Palavra">
+          </div>
+          <p class="note" style="margin-top:8px">Sugestões enquanto você digita (<code>buscar_prefixo(prefixo, limite=8)</code>):</p>
+          <ul class="sug" id="ac-sug"></ul>
+          <div class="controls" style="margin-top:12px">
+            <button class="pri" id="ac-1"><span class="k">1</span>Buscar palavra</button>
+            <button id="ac-2"><span class="k">2</span>Buscar por prefixo</button>
+            <button id="ac-3"><span class="k">3</span>Inserir nova palavra</button>
+          </div>
+          <p class="note" style="margin-top:14px">A entrada passa por <code>normalizar()</code> (Unicode NFC + minúsculas), então “Algoritmo” e “algoritmo” são a mesma chave. Na inserção, só letras são aceitas (<code>isalpha()</code>), e uma palavra repetida não é duplicada.</p>
+        </div>
+        <div>
+          <pre class="term" id="ac-term" aria-live="polite"></pre>
+          <div class="controls" style="justify-content:flex-end;margin-top:6px"><button class="lnk" id="ac-clr">Limpar saída</button></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== HASH ===================== -->
+<section class="sec" id="hash">
+  <div class="wrap">
+    <div class="sec-head">
+      <div class="eyebrow"><span class="tag">Parte II</span>indice_invertido.py</div>
+      <h2>Tabela hash e índice invertido</h2>
+      <p>O índice é um <code>dict</code> do Python: a chave (o termo) passa por uma função hash que aponta uma posição na tabela. Quando duas chaves caem na mesma posição, ocorre uma colisão, e o Python procura outra posição livre (sondagem).</p>
+    </div>
+    <div class="bench">
+      <div class="bench-title"><h3>Como o dict guarda as chaves</h3><span class="stats"><span>ocupação <b id="ht-oc">0</b></span><span class="fill"><i id="ht-fill"></i></span><span>limite de 2/3, depois a tabela dobra</span></span></div>
+      <div class="controls">
+        <input type="text" id="ht-in" class="grow" value="memória" autocomplete="off" spellcheck="false" aria-label="Termo">
+        <button class="pri" id="ht-ins">Inserir termo</button>
+        <button id="ht-busca">Buscar termo</button>
+        <button class="lnk" id="ht-reset">Restaurar exemplo</button>
+      </div>
+      <div class="calc" id="ht-calc">Insira ou busque um termo para ver o cálculo da posição.</div>
+      <div class="htab" id="ht-tab"></div>
+      <p class="note" style="margin-top:12px">Modelo didático: a função hash é polinomial (<code>h = h·31 + código do caractere</code>) e a sondagem é linear. O Python usa SipHash com sementes aleatórias e uma sondagem pseudoaleatória, mas a ideia é a mesma: na média, inserir e buscar custam <b>O(1)</b>, sem percorrer as outras chaves. Cada posição guarda o valor real do índice, o dicionário <code>{documento: frequência}</code>.</p>
+    </div>
+    <div class="bench">
+      <div class="bench-title"><h3>O índice invertido dos 10 documentos</h3><span class="src">termo → {documento: frequência}</span></div>
+      <div class="cols">
+        <div>
+          <div class="controls">
+            <input type="text" id="ix-in" class="grow" value="dados" autocomplete="off" spellcheck="false" aria-label="Termo do índice">
+            <button class="pri" id="ix-go">Consultar</button>
+          </div>
+          <div id="ix-out"></div>
+        </div>
+        <div>
+          <p class="note">Termos mais frequentes no corpus (clique para consultar)</p>
+          <div class="tscroll"><table id="ix-top"></table></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== MECANISMO ===================== -->
+<section class="sec" id="motor">
+  <div class="wrap">
+    <div class="sec-head">
+      <div class="eyebrow"><span class="tag">Parte II</span>main.py · classe MecanismoBusca</div>
+      <h2>O mini mecanismo de busca</h2>
+      <p>Todas as opções do menu do <code>main.py</code>, rodando sobre os documentos reais. A última aba simula colocar um novo <code>.txt</code> na pasta: o documento é pré-processado e inserido no índice e na Trie.</p>
+    </div>
+    <div class="bench">
+      <div class="bench-title"><label class="check"><input type="checkbox" id="mb-stem"> Stemming (<code>python main.py --stemming</code>)</label><span class="src">python main.py</span></div>
+      <div class="kpis" id="mb-kpis"></div>
+      <div class="tabs" role="tablist" id="mb-tabs">
+        <button role="tab" aria-selected="true" data-tab="palavra"><span class="k">1</span>Buscar palavra</button>
+        <button role="tab" aria-selected="false" data-tab="prefixo"><span class="k">2</span>Buscar por prefixo</button>
+        <button role="tab" aria-selected="false" data-tab="seq"><span class="k">3</span>Sequência (KMP)</button>
+        <button role="tab" aria-selected="false" data-tab="docs"><span class="k">4</span>Listar documentos</button>
+        <button role="tab" aria-selected="false" data-tab="stats"><span class="k">5</span>Estatísticas</button>
+        <button role="tab" aria-selected="false" data-tab="novo"><span class="k">+</span>Novo documento</button>
+      </div>
+
+      <div data-panel="palavra">
+        <form class="controls" id="f-palavra"><input type="text" id="mb-palavra" class="grow" value="Algoritmos" spellcheck="false" aria-label="Palavra"><button class="pri">Buscar</button></form>
+        <div id="r-palavra"></div>
+      </div>
+      <div data-panel="prefixo" hidden>
+        <form class="controls" id="f-prefixo"><input type="text" id="mb-prefixo" class="grow" value="proto" spellcheck="false" aria-label="Prefixo"><button class="pri">Buscar</button></form>
+        <div id="r-prefixo"></div>
+      </div>
+      <div data-panel="seq" hidden>
+        <form class="controls" id="f-seq"><input type="text" id="mb-seq" class="grow" value="tabela hash" spellcheck="false" aria-label="Sequência"><button class="pri">Buscar</button></form>
+        <div id="r-seq"></div>
+      </div>
+      <div data-panel="docs" hidden><div id="r-docs"></div></div>
+      <div data-panel="stats" hidden><div id="r-stats"></div></div>
+      <div data-panel="novo" hidden>
+        <form id="f-novo" style="display:grid;gap:10px">
+          <div class="controls"><label for="nv-nome" class="note">Nome do arquivo</label><input type="text" id="nv-nome" class="grow" value="estruturas_busca.txt" spellcheck="false"></div>
+          <textarea id="nv-texto" rows="5">Estruturas de Busca
+
+A Trie acelera o autocomplete porque o custo depende do tamanho do prefixo. O hashing espalha as chaves pela tabela e torna a consulta quase instantânea. Já o algoritmo KMP nunca volta no texto durante a comparação.</textarea>
+          <div class="controls"><button class="pri">Adicionar à pasta documentos/</button><span class="note">Fica só nesta página; os arquivos reais não são alterados.</span></div>
+        </form>
+        <div id="r-novo"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== KMP ===================== -->
+<section class="sec" id="kmp">
+  <div class="wrap">
+    <div class="sec-head">
+      <div class="eyebrow"><span class="tag">Bônus</span>kmp.py · tabela_prefixo() e kmp_buscar()</div>
+      <h2>KMP: comparar sem voltar no texto</h2>
+      <p>Quando há um descasamento, a busca ingênua volta no texto e recomeça. O KMP consulta a tabela LPS (maior prefixo próprio que também é sufixo) e reaproveita o que já casou: o índice <code>i</code> do texto só avança.</p>
+    </div>
+    <div class="bench">
+      <div class="controls">
+        <label for="km-t" class="note">Texto</label><input type="text" id="km-t" class="grow" value="ababcabcabababd" spellcheck="false">
+        <label for="km-p" class="note">Padrão</label><input type="text" id="km-p" style="flex:0 1 160px" value="ababd" spellcheck="false">
+      </div>
+      <div class="controls" style="margin-top:8px">
+        <button class="pri" id="km-play">Reproduzir</button>
+        <button id="km-step">Próximo passo</button>
+        <button id="km-reset">Reiniciar</button>
+        <span class="note">Exemplos:</span>
+        <button class="chip" data-km="ababcabcabababd|ababd">clássico</button>
+        <button class="chip" data-km="aaaaaaaaaaaaaaaaaaab|aaaab">pior caso da ingênua</button>
+        <button class="chip" data-km="a tabela hash e a tabela de rotas|tabela hash">frase</button>
+      </div>
+      <div class="kgrid" id="km-grid"></div>
+      <div>
+        <span class="note">Tabela LPS do padrão (calculada em O(m)):</span><br>
+        <div class="lps" id="km-lps"></div>
+      </div>
+      <div class="kmsg" id="km-msg" aria-live="polite"></div>
+      <div class="duel">
+        <div><b id="km-ck">0</b><span>comparações do KMP até aqui · O(n + m)</span></div>
+        <div><b id="km-cn">0</b><span>comparações da busca ingênua no texto todo · O(n · m) no pior caso</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== COMPLEXIDADE ===================== -->
+<section class="sec" id="complexidade">
+  <div class="wrap">
+    <div class="sec-head">
+      <div class="eyebrow">experimento_escala.py · Unidade 1</div>
+      <h2>Complexidade: a teoria e o tempo medido</h2>
+      <p>O experimento replica o corpus k vezes (k = 1 a 32) e mede cada etapa. Construção cresce de forma linear com o texto; a Trie quase não muda, porque replicar o texto não cria termos novos; as consultas ficam constantes.</p>
+    </div>
+    <div class="bench">
+      <div class="bench-title">
+        <h3>Tempo de construção × tokens</h3>
+        <div class="seg" role="group" aria-label="Origem dos dados">
+          <button id="ex-py" aria-pressed="true">Python (medido)</button>
+          <button id="ex-js" aria-pressed="false">Rodar no navegador</button>
+        </div>
+      </div>
+      <div class="lg" id="ex-lg"></div>
+      <div class="chart-wrap" id="ex-chart"></div>
+      <p class="note" id="ex-src" style="margin-top:6px"></p>
+      <details style="margin-top:10px"><summary class="note" style="cursor:pointer">Ver tabela completa</summary><div class="tscroll"><table id="ex-tab"></table></div></details>
+    </div>
+    <div class="bench">
+      <div class="tscroll">
+      <table class="ctab">
+        <thead><tr><th>Operação</th><th>Custo</th><th>Onde</th><th>Por quê</th></tr></thead>
+        <tbody>
+          <tr><td>Inserir palavra na Trie</td><td>O(m)</td><td><code>Trie.inserir</code></td><td>Um nó por caractere; cada filho é achado no dict em O(1).</td></tr>
+          <tr><td>Busca exata na Trie</td><td>O(m)</td><td><code>Trie.buscar</code></td><td>Desce m níveis e confere <code>fim_de_palavra</code>.</td></tr>
+          <tr><td>Busca por prefixo</td><td>O(p + n)</td><td><code>Trie.buscar_prefixo</code></td><td>p níveis até o prefixo, depois DFS nos n nós da subárvore.</td></tr>
+          <tr><td>Pré-processamento</td><td>O(c)</td><td><code>preprocessar</code></td><td>Cada etapa percorre os c caracteres ou tokens uma vez; stopwords num <code>set</code>.</td></tr>
+          <tr><td>Construir o índice</td><td>O(t)</td><td><code>adicionar_documento</code></td><td>Uma atualização O(1) no hash para cada um dos t tokens.</td></tr>
+          <tr><td>Buscar palavra no índice</td><td>O(1) médio</td><td><code>frequencias</code></td><td>Acesso direto pela chave; ordenar d documentos custa O(d log d).</td></tr>
+          <tr><td>Buscar sequência</td><td>O(n + m)</td><td><code>kmp_buscar</code></td><td>LPS em O(m); o texto é lido uma única vez.</td></tr>
+        </tbody>
+      </table>
+      </div>
+    </div>
+  </div>
+</section>
+</main>
+
+<footer>
+  <div class="wrap">Todos os algoritmos desta página são uma tradução direta dos arquivos <code>.py</code> do projeto para JavaScript, executados sobre os mesmos documentos, <code>palavras.txt</code> e <code>stopwords.txt</code>. Para atualizar os dados embutidos após mudar os arquivos, rode <code>python gerar_visualizacao.py</code>.</div>
+</footer>
+
+<script>
+const DADOS = /*DADOS_INICIO*/{"documentos": {"algoritmos.txt": "Algoritmos e Técnicas de Projeto\n\nUm algoritmo é uma sequência finita de instruções bem definidas que resolve um problema ou executa uma tarefa. Na computação, os algoritmos são a base de qualquer programa: desde a ordenação de uma lista de nomes até o cálculo de rotas em um aplicativo de mapas. Um bom algoritmo precisa ser correto, ou seja, produzir a resposta esperada para todas as entradas válidas, e eficiente, consumindo uma quantidade razoável de tempo e de memória.\n\nExistem diversas técnicas clássicas de projeto de algoritmos. A técnica de divisão e conquista divide o problema em subproblemas menores, resolve cada um deles de forma recursiva e combina as soluções. O Merge Sort e o Quick Sort são exemplos conhecidos dessa abordagem. A busca binária também utiliza a ideia de dividir o espaço de busca pela metade a cada passo, alcançando complexidade logarítmica.\n\nA programação dinâmica é indicada quando o problema possui subestrutura ótima e subproblemas sobrepostos. Em vez de recalcular o mesmo subproblema várias vezes, o algoritmo armazena os resultados intermediários em uma tabela. Problemas como a mochila binária, a maior subsequência comum e a distância de edição entre duas palavras são resolvidos com programação dinâmica. A distância de edição, por exemplo, é muito utilizada em corretores ortográficos e em sistemas de busca que toleram erros de digitação.\n\nOs algoritmos gulosos tomam, a cada etapa, a decisão que parece melhor naquele momento, sem reconsiderar escolhas anteriores. Essa estratégia nem sempre produz a solução ótima, mas funciona muito bem em problemas como a árvore geradora mínima, resolvida pelos algoritmos de Kruskal e Prim, e na codificação de Huffman, usada na compressão de dados.\n\nOs algoritmos de busca em grafos, como a busca em largura e a busca em profundidade, permitem explorar estruturas compostas por vértices e arestas. O algoritmo de Dijkstra calcula o menor caminho a partir de uma origem em grafos com pesos não negativos e é aplicado em roteamento de redes e em sistemas de navegação.\n\nNo processamento de textos, algoritmos de casamento de padrões têm papel fundamental. A busca ingênua compara o padrão com cada posição do texto e pode ter custo quadrático no pior caso. O algoritmo de Knuth, Morris e Pratt, conhecido como KMP, utiliza uma tabela de prefixos para evitar comparações repetidas, garantindo custo linear em relação ao tamanho do texto e do padrão. O algoritmo de Boyer-Moore e o de Rabin-Karp são outras alternativas, sendo este último baseado em funções hash.\n\nA análise de algoritmos estuda o comportamento do tempo de execução e do uso de memória conforme o tamanho da entrada cresce. A notação assintótica, com O grande, ômega e theta, permite comparar algoritmos de maneira independente do computador utilizado. Um algoritmo de complexidade linear tende a ser muito mais rápido do que um algoritmo quadrático quando a entrada é grande, mesmo que em entradas pequenas a diferença seja imperceptível.\n\nPor fim, a escolha do algoritmo está diretamente ligada à escolha da estrutura de dados. Uma busca em uma lista não ordenada é sequencial, enquanto uma busca em uma tabela hash é, em média, constante. Compreender essa relação é essencial para projetar programas eficientes, escaláveis e confiáveis.\n", "banco_dados.txt": "Banco de Dados\n\nUm banco de dados é uma coleção organizada de dados relacionados, armazenada de forma que possa ser consultada, atualizada e gerenciada com eficiência. O software responsável por essa gestão é o sistema gerenciador de banco de dados, que controla o acesso concorrente, a segurança, a integridade e a recuperação em caso de falhas.\n\nO modelo relacional, proposto por Edgar Codd, organiza os dados em tabelas compostas por linhas e colunas. Cada tabela representa uma entidade, e os relacionamentos entre tabelas são estabelecidos por chaves primárias e chaves estrangeiras. A linguagem SQL é utilizada para definir estruturas, inserir, atualizar, remover e consultar dados. Comandos como SELECT, INSERT, UPDATE e DELETE fazem parte do dia a dia de qualquer desenvolvedor.\n\nA normalização é o processo de organizar as tabelas para reduzir redundâncias e evitar anomalias de atualização. As formas normais, como a primeira, a segunda e a terceira forma normal, definem regras progressivas para a estrutura das tabelas. Em alguns cenários, porém, a desnormalização é aplicada de propósito para melhorar o desempenho de consultas de leitura.\n\nAs transações garantem que um conjunto de operações seja executado de forma confiável. As propriedades ACID, que significam atomicidade, consistência, isolamento e durabilidade, asseguram que uma transferência bancária, por exemplo, não seja executada pela metade. O controle de concorrência utiliza bloqueios ou múltiplas versões dos dados para permitir que vários usuários acessem o banco ao mesmo tempo.\n\nOs índices são estruturas auxiliares que aceleram as buscas. Sem índice, o banco precisa percorrer a tabela inteira, em uma busca sequencial. Com um índice baseado em árvore B, a busca passa a ter custo logarítmico e também permite consultas por intervalo. Índices baseados em hash oferecem busca constante em média para igualdade, mas não são adequados para consultas por intervalo ou ordenação. Assim como em um mecanismo de busca, a escolha do índice depende do tipo de consulta mais frequente.\n\nOs bancos de dados não relacionais, conhecidos como NoSQL, surgiram para atender aplicações com grandes volumes de dados e necessidade de escalabilidade horizontal. Existem bancos orientados a documentos, como o MongoDB, bancos chave e valor, como o Redis, bancos colunares, como o Cassandra, e bancos orientados a grafos, como o Neo4j. Cada modelo é adequado a um tipo específico de problema.\n\nOs mecanismos de busca textual, como o Elasticsearch, são construídos sobre índices invertidos. Em vez de procurar a palavra em cada documento, o sistema consulta diretamente a lista de documentos associada a cada termo. Recursos de busca textual também estão disponíveis em bancos relacionais, como o PostgreSQL, que oferece índices específicos para texto completo.\n\nA modelagem de dados é uma etapa essencial no desenvolvimento de sistemas. O modelo conceitual, geralmente representado por um diagrama entidade relacionamento, descreve as entidades e seus relacionamentos. O modelo lógico transforma essa representação em tabelas, e o modelo físico define detalhes de armazenamento, tipos de dados e índices.\n\nA administração de banco de dados envolve rotinas de cópia de segurança, monitoramento de desempenho, ajuste de consultas lentas e controle de permissões de acesso. Com o crescimento das leis de proteção de dados, a segurança e a privacidade das informações armazenadas tornaram-se ainda mais importantes.\n", "compiladores.txt": "Compiladores e Linguagens de Programação\n\nUm compilador é um programa que traduz um código escrito em uma linguagem de programação de alto nível para uma linguagem de nível mais baixo, geralmente código de máquina executável pelo processador. Os interpretadores, por sua vez, executam o código fonte diretamente, instrução por instrução, sem gerar um executável separado. Muitas linguagens modernas combinam as duas abordagens, compilando para um código intermediário que é executado por uma máquina virtual.\n\nO processo de compilação é dividido em fases. A primeira é a análise léxica, realizada pelo analisador léxico, também chamado de scanner. Ele lê a sequência de caracteres do programa e a agrupa em tokens, como palavras reservadas, identificadores, números, operadores e símbolos de pontuação. Essa etapa é muito semelhante à tokenização feita no processamento de textos, e geralmente é implementada com expressões regulares e autômatos finitos.\n\nA segunda fase é a análise sintática, realizada pelo analisador sintático, conhecido como parser. Ele verifica se a sequência de tokens respeita a gramática da linguagem e constrói uma árvore sintática. As gramáticas livres de contexto descrevem a estrutura das linguagens de programação, e técnicas como a análise descendente recursiva e a análise LR são utilizadas para construir analisadores eficientes.\n\nA análise semântica verifica regras que não podem ser expressas pela gramática, como a compatibilidade de tipos, a declaração de variáveis antes do uso e o número correto de argumentos em chamadas de função. Para isso, o compilador mantém uma tabela de símbolos, normalmente implementada com tabelas hash, que associa cada identificador às suas informações, como tipo, escopo e endereço. Como a tabela de símbolos é consultada a todo momento, a busca em tempo constante médio oferecida pelo hash é essencial para o desempenho da compilação.\n\nDepois das análises, o compilador gera uma representação intermediária do programa. Sobre essa representação são aplicadas otimizações, como a eliminação de código morto, a propagação de constantes, a remoção de subexpressões comuns e a otimização de laços. O objetivo é produzir um programa mais rápido ou que ocupe menos memória, sem alterar o seu comportamento.\n\nA última fase é a geração de código, que traduz a representação intermediária para instruções do processador alvo. Nessa etapa, o compilador decide como utilizar os registradores, que são a memória mais rápida do processador, e como organizar as instruções para aproveitar recursos como o pipeline e a memória cache.\n\nAs linguagens de programação podem ser classificadas por paradigma. O paradigma imperativo descreve a computação como uma sequência de comandos que alteram o estado do programa. O paradigma orientado a objetos organiza o código em classes e objetos, com encapsulamento, herança e polimorfismo. O paradigma funcional trata a computação como avaliação de funções matemáticas, evitando estados mutáveis. O paradigma lógico descreve fatos e regras e deixa que o sistema deduza as respostas.\n\nA linguagem Python é interpretada, possui tipagem dinâmica e é muito utilizada em ciência de dados, automação e inteligência artificial. A linguagem C é compilada e oferece controle detalhado da memória, sendo adequada para sistemas operacionais e sistemas embarcados. A linguagem Java é compilada para bytecode e executada em uma máquina virtual, o que garante portabilidade. Conhecer o funcionamento dos compiladores ajuda o programador a escrever código mais eficiente e a compreender as mensagens de erro.\n", "complexidade.txt": "Complexidade de Algoritmos\n\nA análise de complexidade procura responder uma pergunta simples: como o custo de um algoritmo cresce à medida que o tamanho da entrada aumenta? Esse custo pode ser medido em tempo de execução, em quantidade de operações elementares ou em espaço de memória utilizado. A análise permite prever o comportamento de um programa antes mesmo de executá-lo com grandes volumes de dados.\n\nA notação O grande descreve um limite superior para o crescimento da função de custo. Dizer que um algoritmo é O(n) significa que, para entradas suficientemente grandes, o tempo cresce no máximo de forma proporcional ao tamanho da entrada. A notação ômega descreve um limite inferior e a notação theta descreve um limite justo, quando os limites superior e inferior coincidem.\n\nAs classes de complexidade mais comuns são a constante, a logarítmica, a linear, a linearítmica, a quadrática, a cúbica e a exponencial. O acesso a um elemento de vetor pelo índice é constante. A busca binária é logarítmica. A busca sequencial é linear. Os bons algoritmos de ordenação por comparação, como o Merge Sort e o Heap Sort, são linearítmicos. O Bubble Sort e o Insertion Sort são quadráticos no pior caso. Algoritmos de força bruta que testam todas as combinações possíveis costumam ser exponenciais.\n\nÉ importante diferenciar o melhor caso, o caso médio e o pior caso. O Quick Sort, por exemplo, tem desempenho linearítmico no caso médio, mas pode se tornar quadrático no pior caso, quando o pivô escolhido é sempre o menor ou o maior elemento. A tabela hash possui busca constante no caso médio, mas em um cenário com muitas colisões a busca pode degradar para linear.\n\nA análise amortizada considera o custo médio de uma sequência de operações. Um vetor dinâmico que dobra de tamanho quando fica cheio tem, ocasionalmente, uma inserção cara, mas o custo amortizado de cada inserção continua constante.\n\nAlém da análise teórica, a análise empírica mede o tempo real de execução com ferramentas de medição de tempo. Os resultados empíricos devem ser interpretados com cuidado, pois dependem do processador, da memória, da linguagem de programação e de outros processos em execução. Ainda assim, quando o experimento é repetido com entradas de tamanhos crescentes, é possível observar se o crescimento do tempo confirma a previsão teórica.\n\nNo processamento de textos, a complexidade aparece em todas as etapas. A tokenização percorre o texto uma vez e é linear no número de caracteres. A construção de um índice invertido é linear no número de palavras, considerando que cada acesso à tabela hash é constante em média. A inserção de uma palavra de tamanho m em uma Trie custa O(m), e a busca por prefixo custa O(m) para chegar ao nó do prefixo, mais o custo de percorrer todos os nós descendentes para recuperar as palavras.\n\nCompreender a complexidade permite tomar decisões de projeto conscientes. Muitas vezes, uma estrutura que consome um pouco mais de memória, como uma Trie ou uma tabela hash, oferece ganhos expressivos de tempo. Essa troca entre tempo e espaço é uma das ideias centrais da ciência da computação.\n", "engenharia_software.txt": "Engenharia de Software\n\nA engenharia de software é a disciplina que aplica princípios de engenharia ao desenvolvimento, à operação e à manutenção de sistemas de software. Seu objetivo é produzir programas de qualidade, dentro do prazo e do orçamento, que atendam às necessidades dos usuários. A área surgiu na década de 1960, durante a chamada crise do software, quando muitos projetos atrasavam, estouravam o orçamento ou simplesmente não funcionavam.\n\nO ciclo de vida do software envolve etapas como levantamento de requisitos, análise, projeto, implementação, testes, implantação e manutenção. Os requisitos funcionais descrevem o que o sistema deve fazer, enquanto os requisitos não funcionais descrevem qualidades como desempenho, segurança, usabilidade e disponibilidade. Um requisito de desempenho, por exemplo, pode exigir que uma consulta seja respondida em menos de um segundo, o que influencia a escolha de algoritmos e estruturas de dados.\n\nOs modelos de processo organizam essas etapas. O modelo cascata segue uma sequência rígida de fases, adequado a projetos com requisitos estáveis. Os modelos iterativos e incrementais entregam o software em partes. As metodologias ágeis, como Scrum e Kanban, valorizam a colaboração com o cliente, a adaptação a mudanças e entregas frequentes de software funcionando. No Scrum, o trabalho é organizado em ciclos curtos chamados sprints, com reuniões diárias, revisão e retrospectiva.\n\nO projeto de software define a arquitetura do sistema e a organização de seus componentes. Princípios como alta coesão e baixo acoplamento orientam a divisão do código em módulos. A modularização facilita a manutenção, os testes e o reaproveitamento de componentes. Em um mecanismo de busca, por exemplo, separar o pré-processamento, a estrutura Trie e o índice invertido em módulos distintos permite reutilizar a Trie em outros programas. Os padrões de projeto, como Singleton, Observer, Strategy e Factory, oferecem soluções reutilizáveis para problemas recorrentes.\n\nOs testes de software verificam se o sistema se comporta como esperado. Os testes unitários avaliam funções e classes isoladamente, os testes de integração verificam a comunicação entre módulos e os testes de sistema avaliam o produto completo. O desenvolvimento orientado a testes propõe escrever os testes antes do código. A integração contínua executa automaticamente os testes a cada alteração enviada ao repositório.\n\nO controle de versão, com ferramentas como o Git, registra o histórico de alterações do código e permite que várias pessoas trabalhem no mesmo projeto. Ramificações, revisões de código e solicitações de mesclagem fazem parte do fluxo de trabalho moderno. A documentação, incluindo um arquivo README com instruções de execução, é fundamental para que outras pessoas consigam utilizar e manter o sistema.\n\nA manutenção representa a maior parte do custo de um software ao longo de sua vida. Ela pode ser corretiva, para corrigir defeitos, adaptativa, para ajustar o sistema a novos ambientes, perfectiva, para melhorar funcionalidades, ou preventiva, para facilitar manutenções futuras. Código legível, bem comentado e organizado reduz significativamente esse custo.\n\nA qualidade de software pode ser avaliada por métricas e normas, considerando confiabilidade, eficiência, usabilidade, manutenibilidade e portabilidade. Engenharia de software, portanto, não se resume a programar: envolve pessoas, processos, ferramentas e decisões técnicas bem fundamentadas.\n", "estruturas_dados.txt": "Estruturas de Dados\n\nEstruturas de dados são formas de organizar e armazenar informações na memória do computador de modo que possam ser acessadas e modificadas com eficiência. A escolha da estrutura correta influencia diretamente o desempenho de um algoritmo, e por isso o estudo de estruturas de dados caminha lado a lado com o estudo de algoritmos.\n\nO vetor, também chamado de array, armazena elementos em posições contíguas de memória. O acesso a um elemento pelo índice é imediato, com custo constante, mas a inserção no meio do vetor exige deslocar os demais elementos. A lista encadeada resolve esse problema ao ligar cada elemento ao próximo por meio de ponteiros, permitindo inserções e remoções rápidas, porém com acesso sequencial.\n\nPilhas e filas são estruturas lineares com regras de acesso específicas. A pilha segue o princípio do último a entrar ser o primeiro a sair e é usada em chamadas de funções, avaliação de expressões e na busca em profundidade. A fila segue o princípio do primeiro a entrar ser o primeiro a sair e aparece em escalonamento de processos, impressoras compartilhadas e na busca em largura.\n\nAs árvores organizam os dados de forma hierárquica. A árvore binária de busca mantém os elementos menores à esquerda e os maiores à direita, permitindo buscas com custo proporcional à altura da árvore. Árvores balanceadas, como a AVL e a rubro-negra, garantem altura logarítmica. As árvores B são muito utilizadas em bancos de dados e sistemas de arquivos, pois reduzem o número de acessos ao disco.\n\nA Trie, também conhecida como árvore de prefixos ou árvore digital, é uma estrutura especializada para armazenar cadeias de caracteres. Cada nó representa um caractere e cada caminho da raiz até um nó marcado representa uma palavra. Palavras com prefixos comuns compartilham os mesmos nós iniciais, o que torna a Trie ideal para autocomplete, corretores ortográficos e roteamento de endereços IP. A busca de uma palavra de tamanho m custa O(m), independentemente da quantidade de palavras armazenadas. Em contrapartida, a Trie tradicional pode consumir muita memória, já que cada nó guarda referências para seus filhos. A Trie comprimida, ou árvore Patricia, reduz esse problema ao juntar em uma única aresta as cadeias de nós que possuem apenas um filho.\n\nA tabela hash associa chaves a valores por meio de uma função hash, que transforma a chave em uma posição da tabela. Em média, buscas, inserções e remoções custam tempo constante. Quando duas chaves diferentes são mapeadas para a mesma posição ocorre uma colisão, que pode ser tratada por encadeamento, armazenando uma lista em cada posição, ou por endereçamento aberto, procurando outra posição livre. Um fator de carga alto aumenta as colisões, e por isso as tabelas são redimensionadas periodicamente.\n\nOs grafos representam relações entre objetos e podem ser implementados por matriz de adjacência ou lista de adjacência. Os heaps, por sua vez, são árvores completas que mantêm o maior ou o menor elemento sempre na raiz e servem de base para filas de prioridade e para o algoritmo Heap Sort.\n\nConhecer as estruturas de dados permite ao programador escolher a ferramenta adequada para cada problema. Um mecanismo de busca, por exemplo, combina tabelas hash, árvores de prefixos e listas de documentos para responder consultas de forma rápida mesmo com grandes volumes de texto.\n", "inteligencia_artificial.txt": "Inteligência Artificial\n\nA inteligência artificial é a área da computação que estuda e desenvolve sistemas capazes de executar tarefas que normalmente exigiriam inteligência humana, como reconhecer imagens, compreender a linguagem, tomar decisões e aprender com a experiência. Desde as primeiras pesquisas da década de 1950, a área passou por ciclos de grande entusiasmo e períodos de descrédito, até alcançar a popularidade atual impulsionada pelo aprendizado profundo.\n\nOs primeiros sistemas de inteligência artificial eram baseados em regras e em busca. Algoritmos de busca em espaço de estados, como a busca em largura, a busca em profundidade e a busca A estrela, eram usados para resolver quebra-cabeças, jogos e problemas de planejamento. Os sistemas especialistas representavam o conhecimento de especialistas humanos na forma de regras do tipo se e então.\n\nO aprendizado de máquina mudou o foco da programação explícita para o aprendizado a partir de dados. No aprendizado supervisionado, o algoritmo recebe exemplos rotulados e aprende a prever o rótulo de novos exemplos. Regressão linear, árvores de decisão, máquinas de vetores de suporte e redes neurais são exemplos de modelos supervisionados. No aprendizado não supervisionado, o algoritmo procura padrões em dados sem rótulos, como no agrupamento pelo método k-médias. No aprendizado por reforço, um agente aprende a agir em um ambiente recebendo recompensas e punições.\n\nAs redes neurais artificiais são inspiradas, de forma simplificada, no funcionamento dos neurônios. Cada neurônio artificial calcula uma soma ponderada de suas entradas e aplica uma função de ativação. O treinamento ajusta os pesos por meio do algoritmo de retropropagação e da descida do gradiente. Redes com muitas camadas formam o chamado aprendizado profundo, responsável por grandes avanços em visão computacional e processamento de linguagem natural.\n\nO processamento de linguagem natural trata da interação entre computadores e a linguagem humana. Suas etapas iniciais são muito parecidas com as de um mecanismo de busca: tokenização, conversão para minúsculas, remoção de pontuação, remoção de stopwords, stemming e lematização. Em seguida, os textos podem ser representados por vetores, como no modelo de saco de palavras, no TF-IDF ou em representações densas aprendidas por redes neurais.\n\nOs grandes modelos de linguagem são redes neurais treinadas com enormes volumes de texto e capazes de gerar respostas, resumir documentos, traduzir idiomas e escrever programas. Eles utilizam a arquitetura transformer, baseada no mecanismo de atenção. Apesar dos resultados impressionantes, esses modelos podem produzir informações incorretas e refletir vieses presentes nos dados de treinamento.\n\nA inteligência artificial também levanta questões éticas importantes, como a privacidade dos dados, a transparência das decisões automatizadas, o impacto no mercado de trabalho e a responsabilidade por erros. O desenvolvimento responsável exige avaliação cuidadosa, supervisão humana e atenção à proteção de dados pessoais.\n\nHoje, a inteligência artificial está presente em assistentes virtuais, sistemas de recomendação, diagnóstico médico por imagens, detecção de fraudes, carros autônomos e automação de atendimento. A tendência é que sua integração com outras áreas da computação continue crescendo nos próximos anos.\n", "redes.txt": "Redes de Computadores\n\nUma rede de computadores é um conjunto de dispositivos interligados que trocam informações por meio de enlaces de comunicação. A internet é a maior rede do mundo e conecta bilhões de computadores, celulares, servidores e sensores. Para que essa comunicação funcione, os dispositivos seguem regras padronizadas chamadas protocolos.\n\nO modelo de referência OSI divide a comunicação em sete camadas: física, enlace, rede, transporte, sessão, apresentação e aplicação. Na prática, a internet utiliza o modelo TCP/IP, que organiza a comunicação em quatro ou cinco camadas. Cada camada oferece serviços para a camada superior e utiliza os serviços da camada inferior, o que facilita o projeto e a manutenção dos protocolos.\n\nNa camada de rede, o protocolo IP é responsável pelo endereçamento e pelo roteamento dos pacotes. Cada dispositivo recebe um endereço IP, e os roteadores decidem por qual caminho cada pacote deve seguir. Os roteadores consultam tabelas de roteamento usando a regra do maior prefixo correspondente, e estruturas como a Trie binária são utilizadas para realizar essa busca de prefixos de endereços de forma rápida. Protocolos de roteamento como OSPF e BGP mantêm essas tabelas atualizadas, e o OSPF utiliza o algoritmo de Dijkstra para calcular os menores caminhos.\n\nNa camada de transporte, o protocolo TCP oferece uma comunicação confiável e orientada à conexão. Ele garante a entrega dos dados na ordem correta, realiza o controle de fluxo e o controle de congestionamento. O protocolo UDP, por outro lado, é mais simples e não garante a entrega, sendo preferido em aplicações sensíveis a atrasos, como jogos online, chamadas de voz e transmissões ao vivo.\n\nNa camada de aplicação estão os protocolos utilizados diretamente pelos programas. O HTTP e o HTTPS são usados na navegação na web, o SMTP no envio de mensagens de correio eletrônico e o DNS na tradução de nomes de domínio em endereços IP. O DNS funciona como uma grande base de dados distribuída e hierárquica, e utiliza cache para reduzir o tempo de resposta.\n\nAs redes locais, conhecidas como LAN, conectam dispositivos em uma área restrita, como uma casa, um escritório ou um laboratório. As redes de longa distância, conhecidas como WAN, conectam redes locais em cidades e países diferentes. A tecnologia Ethernet domina as redes cabeadas, enquanto o Wi-Fi é o padrão das redes sem fio.\n\nA segurança de redes envolve firewalls, sistemas de detecção de intrusão, redes privadas virtuais e criptografia. Ataques de negação de serviço, interceptação de tráfego e falsificação de endereços são ameaças comuns. A criptografia com o protocolo TLS protege a confidencialidade e a integridade dos dados transmitidos na web, e funções hash criptográficas são usadas para verificar se uma mensagem foi alterada.\n\nO desempenho de uma rede é avaliado por métricas como largura de banda, latência, perda de pacotes e variação do atraso. Com a computação em nuvem, a internet das coisas e as redes móveis de quinta geração, a demanda por redes rápidas, seguras e confiáveis continua crescendo.\n", "seguranca_informacao.txt": "Segurança da Informação\n\nA segurança da informação tem como objetivo proteger os dados e os sistemas contra acessos não autorizados, alterações indevidas e indisponibilidade. Seus três pilares são a confidencialidade, que garante que apenas pessoas autorizadas acessem a informação, a integridade, que assegura que os dados não sejam modificados de forma indevida, e a disponibilidade, que garante o acesso à informação sempre que necessário.\n\nA criptografia é uma das principais ferramentas da segurança. Na criptografia simétrica, a mesma chave é utilizada para cifrar e decifrar a mensagem, como no algoritmo AES. Na criptografia assimétrica, cada usuário possui um par de chaves, uma pública e uma privada, como no algoritmo RSA. A criptografia assimétrica permite a troca segura de chaves e a criação de assinaturas digitais, que comprovam a autoria e a integridade de um documento.\n\nAs funções hash criptográficas transformam uma entrada de qualquer tamanho em uma saída de tamanho fixo, chamada resumo. Uma boa função hash criptográfica deve ser rápida de calcular, muito difícil de inverter e resistente a colisões, ou seja, deve ser praticamente impossível encontrar duas entradas diferentes que produzam o mesmo resumo. Algoritmos como SHA-256 são usados para verificar a integridade de arquivos, armazenar senhas e construir blockchains. É importante não confundir essas funções com as funções hash usadas em tabelas hash, que priorizam a velocidade e a boa distribuição das chaves, e não a resistência a ataques.\n\nO armazenamento de senhas exige cuidados especiais. As senhas nunca devem ser guardadas em texto puro. O correto é armazenar o resultado de uma função hash lenta, como bcrypt ou Argon2, combinada com um valor aleatório chamado sal. Assim, mesmo que o banco de dados seja vazado, recuperar as senhas originais se torna muito difícil.\n\nEntre as ameaças mais comuns estão os vírus, os worms, os cavalos de Troia e o ransomware, que sequestra os dados da vítima e exige pagamento para liberá-los. A engenharia social explora a confiança das pessoas, e o phishing utiliza mensagens falsas para roubar credenciais. Em aplicações web, ataques como injeção de SQL e cross-site scripting exploram falhas no tratamento das entradas do usuário. Validar e tratar todas as entradas é uma regra básica de programação segura.\n\nA autenticação verifica a identidade do usuário, e a autorização define o que ele pode fazer. A autenticação de múltiplos fatores combina algo que o usuário sabe, como uma senha, algo que ele possui, como um celular, e algo que ele é, como a impressão digital. O princípio do menor privilégio recomenda que cada usuário e cada programa tenha apenas as permissões estritamente necessárias.\n\nAs organizações utilizam políticas de segurança, planos de continuidade de negócios, cópias de segurança e monitoramento constante. Ferramentas de detecção de intrusão analisam registros e tráfego de rede em busca de padrões suspeitos, muitas vezes utilizando algoritmos de busca de padrões em texto e técnicas de inteligência artificial.\n\nNo Brasil, a Lei Geral de Proteção de Dados estabelece regras para a coleta, o tratamento e o compartilhamento de dados pessoais. A segurança da informação, portanto, envolve tecnologia, processos e pessoas, e deve ser considerada desde o início do projeto de qualquer sistema.\n", "sistemas_operacionais.txt": "Sistemas Operacionais\n\nO sistema operacional é o software que gerencia os recursos de hardware de um computador e oferece serviços para os programas de aplicação. Ele atua como intermediário entre o usuário e o hardware, escondendo detalhes complexos e permitindo que vários programas sejam executados ao mesmo tempo de forma segura. Linux, Windows, macOS, Android e iOS são exemplos de sistemas operacionais amplamente utilizados.\n\nUma das principais funções do sistema operacional é o gerenciamento de processos. Um processo é um programa em execução, com seu próprio espaço de memória, registradores e recursos. O escalonador decide qual processo utilizará o processador em cada instante. Algoritmos de escalonamento como primeiro a chegar primeiro a ser servido, menor tarefa primeiro, prioridade e round robin buscam equilibrar justiça, tempo de resposta e aproveitamento do processador. As threads são fluxos de execução dentro de um mesmo processo e compartilham sua memória.\n\nQuando vários processos ou threads acessam recursos compartilhados, surgem problemas de concorrência. As condições de corrida ocorrem quando o resultado depende da ordem de execução. Para evitá-las, utilizam-se mecanismos de sincronização como semáforos, mutex e monitores. O impasse, também chamado de deadlock, acontece quando dois ou mais processos ficam esperando indefinidamente por recursos que estão presos uns pelos outros.\n\nO gerenciamento de memória controla quais partes da memória principal estão em uso e por quais processos. A memória virtual permite que um processo utilize mais memória do que a disponível fisicamente, armazenando partes dele em disco. A paginação divide a memória em blocos de tamanho fixo chamados páginas. Quando uma página necessária não está na memória principal ocorre uma falta de página, e algoritmos de substituição, como o menos recentemente utilizado, decidem qual página deve ser removida.\n\nO sistema de arquivos organiza os dados armazenados em disco em arquivos e diretórios. Ele controla nomes, permissões, datas de modificação e a localização física dos blocos. Para encontrar rapidamente um arquivo em diretórios com muitos itens, alguns sistemas de arquivos utilizam árvores B ou tabelas hash. Um programa que processa automaticamente todos os arquivos de uma pasta depende das chamadas do sistema operacional para listar o conteúdo do diretório e abrir cada arquivo.\n\nO gerenciamento de entrada e saída controla a comunicação com dispositivos como teclado, mouse, monitor, disco, rede e impressoras. Os drivers são módulos que conhecem os detalhes de cada dispositivo. As interrupções permitem que o hardware avise o processador quando uma operação termina, evitando que ele fique esperando ativamente.\n\nA segurança e a proteção também são responsabilidades do sistema operacional. Ele separa o modo usuário do modo núcleo, controla permissões de acesso a arquivos e autentica usuários. Os sistemas operacionais modernos ainda oferecem virtualização e contêineres, que permitem executar vários ambientes isolados em uma mesma máquina física, tecnologia fundamental para a computação em nuvem.\n\nEstudar sistemas operacionais ajuda a entender o desempenho dos programas. O tempo medido para executar uma consulta, por exemplo, pode variar conforme a carga do processador, o uso de cache e a atuação do escalonador, motivo pelo qual medições de tempo devem ser repetidas e interpretadas com cuidado.\n"}, "palavras": "aberto\nabordagem\nabordagens\nabrir\naceleram\nacessadas\nacessam\nacessem\nacesso\nacessos\nacid\nacontece\nacoplamento\nadaptativa\nadaptação\nadequada\nadequado\nadequados\nadjacência\nadministração\naes\nagente\nagir\nagrupa\nagrupamento\najuda\najusta\najustar\najuste\nalcançando\nalcançar\naleatório\nalgo\nalgoritmo\nalgoritmos\nalguns\nalta\nalterada\nalteram\nalterar\nalteração\nalterações\nalternativas\nalto\naltura\nalvo\nalém\nambiente\nambientes\nameaças\namortizada\namortizado\namplamente\nanalisador\nanalisadores\nanalisam\nandroid\nanomalias\nanos\nanteriores\nantes\nanálise\nanálises\naparece\napesar\naplica\naplicada\naplicadas\naplicado\naplicativo\naplicação\naplicações\naprende\naprender\naprendidas\naprendizado\napresentação\naproveitamento\naproveitar\naresta\narestas\nargon\nargumentos\narmazena\narmazenada\narmazenadas\narmazenados\narmazenamento\narmazenando\narmazenar\narquitetura\narquivo\narquivos\narray\nartificiais\nartificial\nassegura\nasseguram\nassimétrica\nassinaturas\nassintótica\nassistentes\nassocia\nassociada\nataques\natendam\natender\natendimento\natenção\nativamente\nativação\natomicidade\natrasavam\natraso\natrasos\natua\natual\natualizada\natualizadas\natualizar\natualização\natuação\naumenta\nautentica\nautenticação\nautocomplete\nautomaticamente\nautomatizadas\nautomação\nautoria\nautorizadas\nautorizados\nautorização\nautômatos\nautônomos\nauxiliares\navaliada\navaliado\navaliam\navaliação\navanços\navise\navl\nbaixo\nbalanceadas\nbanco\nbancos\nbancária\nbanda\nbase\nbaseada\nbaseado\nbaseados\nbcrypt\nbem\nbgp\nbilhões\nbinária\nblockchains\nblocos\nbloqueios\nboa\nbom\nbons\nboyer\nbrasil\nbruta\nbubble\nbusca\nbuscam\nbuscas\nbytecode\nbásica\ncabeadas\ncabeças\ncache\ncadeias\ncalcula\ncalcular\ncamada\ncamadas\ncaminha\ncaminho\ncaminhos\ncapazes\ncara\ncaractere\ncaracteres\ncarga\ncarros\ncasa\ncasamento\ncascata\ncaso\ncassandra\ncavalos\ncelular\ncelulares\ncentrais\ncenário\ncenários\nchamada\nchamadas\nchamado\nchamados\nchave\nchaves\nchegar\ncheio\nciclo\nciclos\ncidades\ncifrar\ncinco\nciência\nclasses\nclassificadas\ncliente\nclássicas\ncodd\ncodificação\ncoesão\ncoincidem\ncoisas\ncolaboração\ncoleta\ncoleção\ncolisão\ncolisões\ncolunares\ncolunas\ncomandos\ncombina\ncombinada\ncombinam\ncombinações\ncomentado\ncompara\ncomparar\ncomparação\ncomparações\ncompartilhadas\ncompartilhados\ncompartilham\ncompartilhamento\ncompatibilidade\ncompilada\ncompilador\ncompiladores\ncompilando\ncompilação\ncompletas\ncompleto\ncomplexidade\ncomplexos\ncomponentes\ncomporta\ncomportamento\ncompostas\ncompreender\ncompressão\ncomprimida\ncomprovam\ncomputacional\ncomputador\ncomputadores\ncomputação\ncomum\ncomunicação\ncomuns\nconceitual\nconcorrente\nconcorrência\ncondições\nconecta\nconectam\nconexão\nconfiabilidade\nconfiança\nconfidencialidade\nconfirma\nconfiáveis\nconfiável\nconforme\nconfundir\ncongestionamento\nconhecem\nconhecer\nconhecida\nconhecidas\nconhecido\nconhecidos\nconhecimento\nconjunto\nconquista\nconscientes\nconsidera\nconsiderada\nconsiderando\nconsigam\nconsistência\nconsome\nconstante\nconstantes\nconstruir\nconstrução\nconstruídos\nconstrói\nconsulta\nconsultada\nconsultam\nconsultar\nconsultas\nconsumindo\nconsumir\ncontexto\nconteúdo\ncontinua\ncontinue\ncontinuidade\ncontra\ncontrapartida\ncontrola\ncontrole\ncontêineres\ncontíguas\ncontínua\nconversão\ncorreio\ncorrespondente\ncorreta\ncorretiva\ncorreto\ncorretores\ncorrida\ncorrigir\ncostumam\ncredenciais\ncresce\ncrescendo\ncrescentes\ncrescimento\ncriação\ncriptografia\ncriptográfica\ncriptográficas\ncrise\ncross\ncuidado\ncuidados\ncuidadosa\ncurtos\ncusta\ncustam\ncusto\ncálculo\ncódigo\ncópia\ncópias\ncúbica\ndados\ndatas\ndeadlock\ndecide\ndecidem\ndecifrar\ndecisão\ndecisões\ndeclaração\ndeduza\ndefeitos\ndefine\ndefinem\ndefinidas\ndefinir\ndegradar\ndeixa\ndelete\ndemais\ndemanda\ndensas\ndentro\ndepende\ndependem\ndescendente\ndescendentes\ndescida\ndescreve\ndescrevem\ndescrédito\ndesde\ndesempenho\ndesenvolve\ndesenvolvedor\ndesenvolvimento\ndeslocar\ndesnormalização\ndessa\ndetalhado\ndetalhes\ndetecção\ndia\ndiagnóstico\ndiagrama\ndiferenciar\ndiferentes\ndiferença\ndifícil\ndigitais\ndigital\ndigitação\ndijkstra\ndinâmica\ndinâmico\ndireita\ndiretamente\ndiretório\ndiretórios\ndisciplina\ndisco\ndisponibilidade\ndisponíveis\ndisponível\ndispositivo\ndispositivos\ndistintos\ndistribuição\ndistribuída\ndistância\ndiversas\ndivide\ndividido\ndividir\ndivisão\ndizer\ndiárias\ndns\ndobra\ndocumentação\ndocumento\ndocumentos\ndois\ndomina\ndomínio\ndrivers\nduas\ndurabilidade\ndurante\ndécada\nedgar\nedição\neficiente\neficientes\neficiência\nelasticsearch\nelementares\nelemento\nelementos\neletrônico\neliminação\nembarcados\nempírica\nempíricos\nencadeada\nencadeamento\nencapsulamento\nencontrar\nendereçamento\nendereço\nendereços\nengenharia\nenlace\nenlaces\nenormes\nenquanto\nentender\nentidade\nentidades\nentrada\nentradas\nentrar\nentrega\nentregam\nentregas\nentusiasmo\nenviada\nenvio\nenvolve\nequilibrar\nerro\nerros\nescalabilidade\nescalonador\nescalonamento\nescaláveis\nescolha\nescolhas\nescolher\nescolhido\nescondendo\nescopo\nescrever\nescrito\nescritório\nespaço\nespeciais\nespecialistas\nespecializada\nespecíficas\nespecífico\nespecíficos\nesperada\nesperado\nesperando\nesquerda\nessencial\nestabelece\nestabelecidos\nestado\nestados\nestouravam\nestrangeiras\nestratégia\nestrela\nestritamente\nestrutura\nestruturas\nestuda\nestudar\nestudo\nestáveis\netapa\netapas\nethernet\nevitando\nevitar\nevitá\nexecuta\nexecutada\nexecutado\nexecutados\nexecutam\nexecutar\nexecutá\nexecutável\nexecução\nexemplo\nexemplos\nexige\nexigir\nexigiriam\nexistem\nexperimento\nexperiência\nexplora\nexploram\nexplorar\nexplícita\nexponenciais\nexponencial\nexpressas\nexpressivos\nexpressões\nfacilita\nfacilitar\nfactory\nfalhas\nfalsas\nfalsificação\nfalta\nfase\nfases\nfator\nfatores\nfatos\nfazem\nfazer\nfeita\nferramenta\nferramentas\nfi\nfica\nficam\nfila\nfilas\nfilho\nfilhos\nfim\nfinita\nfinitos\nfio\nfique\nfirewalls\nfisicamente\nfixo\nfluxo\nfluxos\nfoco\nfonte\nforma\nformam\nformas\nforça\nfraudes\nfrequente\nfrequentes\nfunciona\nfuncionais\nfuncional\nfuncionalidades\nfuncionamento\nfuncionando\nfuncionavam\nfuncione\nfundamentadas\nfundamental\nfunção\nfunções\nfuturas\nfísica\nfísico\nganhos\ngarante\ngarantem\ngarantindo\ngera\ngeradora\ngeral\ngeralmente\ngerar\ngeração\ngerencia\ngerenciada\ngerenciador\ngerenciamento\ngestão\ngit\ngradiente\ngrafos\ngramática\ngramáticas\ngrande\ngrandes\nguarda\nguardadas\ngulosos\nhardware\nhash\nheap\nheaps\nherança\nhierárquica\nhistórico\nhoje\nhorizontal\nhttp\nhttps\nhuffman\nhumana\nhumanos\nideal\nideia\nideias\nidentidade\nidentificador\nidentificadores\nidf\nidiomas\nigualdade\nimagens\nimediato\nimpacto\nimpasse\nimperativo\nimperceptível\nimplantação\nimplementada\nimplementados\nimplementação\nimportante\nimportantes\nimpossível\nimpressionantes\nimpressoras\nimpressão\nimpulsionada\nincluindo\nincorretas\nincrementais\nindefinidamente\nindependente\nindependentemente\nindevida\nindevidas\nindicada\nindisponibilidade\ninferior\ninfluencia\ninformação\ninformações\ningênua\niniciais\ninjeção\ninserir\ninsert\ninsertion\ninserção\ninserções\ninspiradas\ninstante\ninstrução\ninstruções\nintegração\nintegridade\ninteira\ninteligência\ninteração\ninterceptação\ninterligados\nintermediária\nintermediário\nintermediários\ninternet\ninterpretada\ninterpretadas\ninterpretadores\ninterpretados\ninterrupções\nintervalo\nintrusão\ninverter\ninvertido\ninvertidos\ninício\nios\nip\nisoladamente\nisolados\nisolamento\nitens\niterativos\njava\njogos\njuntar\njustiça\njusto\nkanban\nkarp\nkmp\nknuth\nkruskal\nlaboratório\nlado\nlan\nlargura\nlas\nlatência\nlaços\nlegível\nlei\nleis\nleitura\nlematização\nlenta\nlentas\nlevanta\nlevantamento\nliberá\nligada\nligar\nlimite\nlimites\nlinear\nlineares\nlinearítmica\nlinearítmico\nlinearítmicos\nlinguagem\nlinguagens\nlinhas\nlinux\nlista\nlistar\nlistas\nlivre\nlivres\nlo\nlocais\nlocalização\nlogarítmica\nlogarítmico\nlonga\nlongo\nlos\nlr\nléxica\nléxico\nlê\nlógico\nmacos\nmaior\nmaiores\nmaneira\nmanter\nmantém\nmantêm\nmanutenibilidade\nmanutenção\nmanutenções\nmapas\nmapeadas\nmarcado\nmatemáticas\nmatriz\nmecanismo\nmecanismos\nmede\nmedida\nmedido\nmedição\nmedições\nmeio\nmelhor\nmelhorar\nmemória\nmenor\nmenores\nmenos\nmensagem\nmensagens\nmercado\nmerge\nmesclagem\nmesma\nmesmos\nmetade\nmetodologias\nminúsculas\nmochila\nmodelagem\nmodelo\nmodelos\nmodernas\nmoderno\nmodernos\nmodificadas\nmodificados\nmodificação\nmodo\nmodularização\nmomento\nmongodb\nmonitor\nmonitoramento\nmonitores\nmoore\nmorris\nmorto\nmotivo\nmouse\nmudanças\nmudou\nmundo\nmutex\nmutáveis\nmáquina\nmáquinas\nmáximo\nmédia\nmédias\nmédico\nmédio\nmétodo\nmétricas\nmínima\nmódulos\nmóveis\nmúltiplas\nmúltiplos\nnaquele\nnatural\nnavegação\nnecessidade\nnecessidades\nnecessária\nnecessárias\nnecessário\nnegativos\nnegação\nnegra\nnegócios\nneo\nnessa\nneurais\nneurônio\nneurônios\nnomes\nnormais\nnormal\nnormalização\nnormalmente\nnormas\nnosql\nnotação\nnovos\nnunca\nnuvem\nnível\nnó\nnúcleo\nnúmero\nnúmeros\nobjetivo\nobjetos\nobservar\nobserver\nocasionalmente\nocorre\nocorrem\nocupe\noferece\noferecem\noferecida\nonline\noperacionais\noperacional\noperadores\noperação\noperações\nordem\nordenada\nordenação\norganiza\norganizada\norganizado\norganizam\norganizar\norganização\norganizações\norientada\norientado\norientados\norientam\norigem\noriginais\nortográficos\norçamento\nosi\nospf\notimização\notimizações\npacote\npacotes\npadronizadas\npadrão\npadrões\npagamento\npaginação\npalavra\npalavras\npapel\npar\nparadigma\nparece\nparecidas\nparser\nparte\npartes\npartir\npassa\npasso\npassou\npasta\npatricia\npaíses\npequenas\npercorre\npercorrer\nperda\nperfectiva\npergunta\nperiodicamente\npermissões\npermite\npermitem\npermitindo\npermitir\nperíodos\npesos\npesquisas\npessoais\npessoas\nphishing\npilares\npilha\npilhas\npior\npipeline\npivô\nplanejamento\nplanos\npolimorfismo\npolíticas\nponderada\nponteiros\npontuação\npopularidade\nportabilidade\nportanto\nporém\nposição\nposições\npossa\npossam\npossuem\npossui\npossíveis\npossível\npostgresql\npouco\npraticamente\npratt\nprazo\nprecisa\npreferido\nprefixo\nprefixos\npresente\npresentes\npresos\npreventiva\nprever\nprevisão\nprim\nprimeira\nprimeiras\nprimeiro\nprimeiros\nprimárias\nprincipais\nprincipal\nprincípio\nprincípios\nprioridade\npriorizam\nprivacidade\nprivada\nprivadas\nprivilégio\nproblema\nproblemas\nprocessa\nprocessador\nprocessamento\nprocesso\nprocessos\nprocura\nprocurando\nprocurar\nproduto\nproduz\nproduzam\nproduzir\nprofundidade\nprofundo\nprograma\nprogramador\nprogramar\nprogramas\nprogramação\nprogressivas\nprojetar\nprojeto\nprojetos\npropagação\nproporcional\nproposto\npropriedades\npropósito\npropõe\nprotege\nproteger\nproteção\nprotocolo\nprotocolos\nprática\npré\npróprio\npróximo\npróximos\npunições\npuro\npython\npágina\npáginas\npública\nquadrática\nquadrático\nquadráticos\nqualidade\nqualidades\nqualquer\nquantidade\nquatro\nquebra\nquestões\nquick\nquinta\nrabin\nraiz\nramificações\nransomware\nrapidamente\nrazoável\nreadme\nreal\nrealiza\nrealizada\nrealizar\nreaproveitamento\nrecalcular\nrecebe\nrecebendo\nrecentemente\nrecomenda\nrecomendação\nrecompensas\nreconhecer\nreconsiderar\nrecorrentes\nrecuperar\nrecuperação\nrecursiva\nrecursos\nrede\nredes\nredimensionadas\nredis\nredundâncias\nreduz\nreduzem\nreduzir\nreferência\nreferências\nrefletir\nreforço\nregistra\nregistradores\nregistros\nregra\nregras\nregressão\nregulares\nrelacionados\nrelacionais\nrelacional\nrelacionamento\nrelacionamentos\nrelação\nrelações\nremover\nremovida\nremoção\nremoções\nrepetidas\nrepetido\nrepositório\nrepresenta\nrepresentado\nrepresentados\nrepresentam\nrepresentavam\nrepresentação\nrepresentações\nrequisito\nrequisitos\nreservadas\nresistente\nresistência\nresolve\nresolver\nresolvida\nresolvidos\nrespeita\nresponder\nrespondida\nresponsabilidade\nresponsabilidades\nresponsável\nresposta\nrespostas\nrestrita\nresultado\nresultados\nresume\nresumir\nresumo\nretropropagação\nretrospectiva\nreuniões\nreutilizar\nreutilizáveis\nrevisão\nrevisões\nrobin\nrotas\nroteadores\nroteamento\nrotinas\nrotulados\nroubar\nround\nrsa\nrubro\nrápida\nrápidas\nrápido\nrígida\nrótulo\nrótulos\nsabe\nsaco\nsair\nsal\nsaída\nscanner\nscripting\nscrum\nsegue\nseguem\nseguida\nseguir\nsegunda\nsegundo\nsegura\nsegurança\nseguras\nselect\nsemelhante\nsempre\nsemáforos\nsemântica\nsenha\nsenhas\nsensores\nsensíveis\nsepara\nseparado\nseparar\nsequencial\nsequestra\nsequência\nservem\nservido\nservidores\nserviço\nserviços\nsessão\nsete\nsha\nsignifica\nsignificam\nsignificativamente\nsimples\nsimplesmente\nsimplificada\nsimétrica\nsincronização\nsingleton\nsintática\nsintático\nsistema\nsistemas\nsite\nsmtp\nsobrepostos\nsocial\nsoftware\nsolicitações\nsolução\nsoluções\nsoma\nsort\nsprints\nsql\nstemming\nstopwords\nstrategy\nsubestrutura\nsubexpressões\nsubproblema\nsubproblemas\nsubsequência\nsubstituição\nsuficientemente\nsuperior\nsupervisionado\nsupervisionados\nsupervisão\nsuporte\nsurgem\nsurgiram\nsurgiu\nsuspeitos\nsímbolos\ntabela\ntabelas\ntamanho\ntamanhos\ntarefa\ntarefas\ntcp\nteclado\ntecnologia\ntempo\ntende\ntendência\ntenha\nterceira\ntermina\ntermo\ntestam\ntestes\ntexto\ntextos\ntextual\nteórica\ntf\ntheta\nthreads\ntipagem\ntipo\ntipos\ntls\ntokenização\ntokens\ntoleram\ntomam\ntomar\ntorna\ntornar\ntornaram\ntrabalhem\ntrabalho\ntradicional\ntraduz\ntraduzir\ntradução\ntransações\ntransferência\ntransforma\ntransformam\ntransformer\ntransmissões\ntransmitidos\ntransparência\ntransporte\ntrata\ntratada\ntratamento\ntratar\ntreinadas\ntreinamento\ntrie\ntroca\ntrocam\ntroia\ntráfego\ntrês\ntécnica\ntécnicas\nudp\nunitários\nupdate\nusabilidade\nusada\nusadas\nusados\nusando\nuso\nusuário\nusuários\nutiliza\nutilizada\nutilizadas\nutilizado\nutilizados\nutilizam\nutilizando\nutilizar\nutilizará\nutilize\nvalidar\nvalor\nvalores\nvalorizam\nvariar\nvariação\nvariáveis\nvazado\nvelocidade\nverifica\nverificam\nverificar\nversão\nversões\nvetor\nvetores\nvez\nvezes\nvida\nvieses\nvirtuais\nvirtual\nvirtualização\nvisão\nvivo\nvolumes\nvoz\nválidas\nvárias\nvários\nvértices\nvírus\nvítima\nwan\nweb\nwi\nwindows\nworms\nágeis\nárea\náreas\nárvore\nárvores\néticas\níndice\níndices\nótima\nômega\núltima\núltimo\núnica\n", "stopwords": "# Stopwords do português (uma por linha)\na\nà\nao\naos\naquela\naquelas\naquele\naqueles\naquilo\nas\nàs\naté\ncom\ncomo\nda\ndas\nde\ndela\ndelas\ndele\ndeles\ndepois\ndo\ndos\ne\né\nela\nelas\nele\neles\nem\nentre\nera\neram\nessa\nessas\nesse\nesses\nesta\nestá\nestão\nestas\nestava\neste\nestes\neu\nfoi\nforam\nhá\nisso\nisto\njá\nlhe\nlhes\nmais\nmas\nme\nmesmo\nmeu\nminha\nmuito\nmuitos\nmuita\nmuitas\nna\nnas\nnão\nnem\nno\nnos\nnós\nnum\nnuma\no\nos\nou\npara\npela\npelas\npelo\npelos\npor\nqual\nquais\nquando\nque\nquem\nse\nsem\nser\nseu\nseus\nsua\nsuas\nsão\nsó\ntambém\nte\ntem\ntêm\nter\num\numa\numas\nuns\nvocê\nvocês\ncada\npode\npodem\nsobre\nassim\nonde\nseja\nsejam\nainda\napenas\noutro\noutra\noutros\noutras\ntodo\ntoda\ntodos\ntodas\ntanto\ntal\ntais\nsendo\nsido\nserá\nserão\ndeve\ndevem\nquanto\nporque\npois\nentão\ncujo\ncuja\n"}/*DADOS_FIM*/;
+</script>
+<script>
+"use strict";
+const $ = (s, el = document) => el.querySelector(s);
+const $$ = (s, el = document) => [...el.querySelectorAll(s)];
+const esc = s => String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const fmt = n => n.toLocaleString("pt-BR");
+const ms = x => x.toLocaleString("pt-BR", { minimumFractionDigits: 4, maximumFractionDigits: 4 });
+const REDUZ = matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+/* =====================================================================
+   preprocessamento.py
+   ===================================================================== */
+const normalizar = t => t.normalize("NFC").toLowerCase();
+const PADRAO_TOKEN = /\p{L}+/gu;              // equivale a [^\W\d_]+ (só letras)
+const tokenizar = t => t.match(PADRAO_TOKEN) || [];
+function carregarStopwords(bruto) {
+  const s = new Set();
+  for (const linha of bruto.split(/\r?\n/)) {
+    const termo = normalizar(linha.trim());
+    if (termo && !termo.startsWith("#")) s.add(termo);
+  }
+  return s;
+}
+const removerStopwords = (tokens, sw) => tokens.filter(t => t.length > 1 && !sw.has(t));
+const SUFIXOS = [
+  "amentos", "imentos", "amento", "imento", "adoras", "adores", "ações",
+  "adora", "ador", "ação", "ância", "ência", "mente", "idades", "idade",
+  "ismos", "ismo", "istas", "ista", "ivos", "ivas", "ivo", "iva",
+  "ais", "eis", "óis", "ões", "ães", "al", "es", "as", "os", "s",
+  "o", "a", "e",
+].sort((a, b) => b.length - a.length);       // sort estável, como sorted(key=len)
+function stemInfo(p) {
+  for (const suf of SUFIXOS)
+    if (p.endsWith(suf) && p.length - suf.length >= 3) return [p.slice(0, -suf.length), suf];
+  return [p, ""];
+}
+const stem = p => stemInfo(p)[0];
+function preprocessar(texto, sw, usarStemming = false) {
+  let tokens = removerStopwords(tokenizar(normalizar(texto)), sw);
+  if (usarStemming) tokens = tokens.map(stem);
+  return tokens;
+}
+
+/* =====================================================================
+   trie.py
+   ===================================================================== */
+const chaveBase = c => c.normalize("NFD")[0];
+function cmpAlfa(a, b) {                       // ç logo após c, ã logo após a
+  const ka = chaveBase(a), kb = chaveBase(b);
+  if (ka !== kb) return ka < kb ? -1 : 1;
+  return a < b ? -1 : a > b ? 1 : 0;
+}
+class NoTrie { constructor() { this.filhos = new Map(); this.fim = false; } }
+class Trie {
+  constructor() { this.raiz = new NoTrie(); this.total = 0; this.nos = 1; }
+  inserir(palavra) {
+    if (!palavra) return false;
+    let no = this.raiz;
+    for (const c of palavra) {
+      if (!no.filhos.has(c)) { no.filhos.set(c, new NoTrie()); this.nos++; }
+      no = no.filhos.get(c);
+    }
+    if (no.fim) return false;
+    no.fim = true; this.total++; return true;
+  }
+  localizar(texto) {
+    let no = this.raiz;
+    for (const c of texto) { no = no.filhos.get(c); if (!no) return null; }
+    return no;
+  }
+  buscar(p) { const no = this.localizar(p); return !!no && no.fim; }
+  buscarPrefixo(prefixo, limite = null) {
+    const no = this.localizar(prefixo);
+    if (!no) return [];
+    const res = [], pilha = [[no, prefixo]];
+    while (pilha.length) {
+      const [atual, texto] = pilha.pop();
+      if (atual.fim) { res.push(texto); if (limite !== null && res.length >= limite) return res; }
+      const ks = [...atual.filhos.keys()].sort(cmpAlfa).reverse();
+      for (const c of ks) pilha.push([atual.filhos.get(c), texto + c]);
+    }
+    return res;
+  }
+}
+
+/* =====================================================================
+   indice_invertido.py
+   ===================================================================== */
+class IndiceInvertido {
+  constructor() { this.idx = new Map(); }
+  adicionarDocumento(nome, tokens) {
+    for (const termo of tokens) {
+      let post = this.idx.get(termo);
+      if (!post) { post = new Map(); this.idx.set(termo, post); }
+      post.set(nome, (post.get(nome) || 0) + 1);
+    }
+  }
+  documentosDoTermo(t) { return new Set((this.idx.get(t) || new Map()).keys()); }
+  frequencias(t) { return new Map(this.idx.get(t) || []); }
+  vocabulario() { return [...this.idx.keys()]; }
+  get tamanho() { return this.idx.size; }
+}
+
+/* =====================================================================
+   kmp.py
+   ===================================================================== */
+function tabelaPrefixo(p) {
+  const lps = new Array(p.length).fill(0);
+  let comp = 0, i = 1;
+  while (i < p.length) {
+    if (p[i] === p[comp]) { comp++; lps[i] = comp; i++; }
+    else if (comp > 0) comp = lps[comp - 1];
+    else { lps[i] = 0; i++; }
+  }
+  return lps;
+}
+function kmpBuscar(texto, padrao, lps) {
+  if (!padrao) return [];
+  lps = lps || tabelaPrefixo(padrao);
+  const pos = []; let j = 0;
+  for (let i = 0; i < texto.length; i++) {
+    const c = texto[i];
+    while (j > 0 && c !== padrao[j]) j = lps[j - 1];
+    if (c === padrao[j]) { j++; if (j === padrao.length) { pos.push(i - j + 1); j = lps[j - 1]; } }
+  }
+  return pos;
+}
+
+/* =====================================================================
+   main.py — MecanismoBusca
+   ===================================================================== */
+const STOPWORDS = carregarStopwords(DADOS.stopwords);
+const DOCS = {};                                     // nome -> texto (inclui docs adicionados aqui)
+Object.keys(DADOS.documentos).sort().forEach(n => DOCS[n] = DADOS.documentos[n]);
+
+class MecanismoBusca {
+  constructor(documentos, usarStemming = false) {
+    this.usarStemming = usarStemming;
+    this.trie = new Trie(); this.indice = new IndiceInvertido();
+    this.documentos = { ...documentos }; this.normalizados = {}; this.tokens = {};
+    this.totalPalavras = 0; this.tempos = {}; this.historico = [];
+  }
+  construir() {
+    for (const n in this.documentos) this.normalizados[n] = normalizar(this.documentos[n]);
+    let t = performance.now();
+    for (const n in this.documentos) {
+      const tk = preprocessar(this.documentos[n], STOPWORDS, this.usarStemming);
+      this.tokens[n] = tk; this.totalPalavras += tk.length;
+    }
+    this.tempos.preprocessamento = performance.now() - t;
+    t = performance.now();
+    for (const n in this.tokens) this.indice.adicionarDocumento(n, this.tokens[n]);
+    this.tempos.indice = performance.now() - t;
+    t = performance.now();
+    for (const termo of this.indice.vocabulario()) this.trie.inserir(termo);
+    this.tempos.trie = performance.now() - t;
+    return this;
+  }
+  registrar(tipo, consulta, t0) { const d = performance.now() - t0; this.historico.push([tipo, consulta, d]); return d; }
+  buscarPalavra(entrada) {
+    const t0 = performance.now();
+    const tk = preprocessar(entrada, new Set(), this.usarStemming);
+    const termo = tk[0] || "";
+    const ord = [...this.indice.frequencias(termo)].sort((a, b) => b[1] - a[1] || (a[0] < b[0] ? -1 : 1));
+    return { termo, docs: ord, tempo: this.registrar("palavra", entrada, t0) };
+  }
+  buscarPrefixo(entrada) {
+    const t0 = performance.now();
+    const termos = this.trie.buscarPrefixo(normalizar(entrada.trim()));
+    const res = termos.map(t => [t, [...this.indice.documentosDoTermo(t)].sort()]);
+    return { res, tempo: this.registrar("prefixo", entrada, t0) };
+  }
+  buscarSequencia(entrada) {
+    const t0 = performance.now();
+    const padrao = normalizar(entrada);
+    const lps = padrao ? tabelaPrefixo(padrao) : [];
+    const res = [];
+    for (const n in this.normalizados) {
+      const pos = kmpBuscar(this.normalizados[n], padrao, lps);
+      if (pos.length) res.push([n, pos.length, pos[0], padrao.length]);
+    }
+    res.sort((a, b) => b[1] - a[1] || (a[0] < b[0] ? -1 : 1));
+    return { res, tempo: this.registrar("sequência", entrada, t0) };
+  }
+  adicionar(nome, texto) {                     // como colocar um .txt novo na pasta
+    const t0 = performance.now();
+    const vocabAntes = this.indice.tamanho;
+    this.documentos[nome] = texto; this.normalizados[nome] = normalizar(texto);
+    const tk = preprocessar(texto, STOPWORDS, this.usarStemming);
+    this.tokens[nome] = tk; this.totalPalavras += tk.length;
+    const novosTermos = [];
+    for (const t of new Set(tk)) if (!this.indice.idx.has(t)) novosTermos.push(t);
+    this.indice.adicionarDocumento(nome, tk);
+    for (const t of novosTermos) this.trie.inserir(t);
+    return { tokens: tk, novosTermos: novosTermos.sort(cmpAlfa), vocabAntes, tempo: performance.now() - t0 };
+  }
+}
+
+let MB = new MecanismoBusca(DOCS).construir();
+const docCurto = n => n.replace(/\.txt$/i, "");
+
+/* =====================================================================
+   HERO — busca ao vivo
+   ===================================================================== */
+function heroRender() {
+  const q = normalizar($("#hero-q").value.trim());
+  const t0 = performance.now();
+  const termos = q ? MB.trie.buscarPrefixo(q) : [];
+  const dt = performance.now() - t0;
+  const ul = $("#hero-list");
+  ul.innerHTML = termos.slice(0, 7).map(t => {
+    const n = MB.indice.documentosDoTermo(t).size;
+    return `<li><button data-t="${esc(t)}"><span class="t"><b>${esc(t.slice(0, q.length))}</b>${esc(t.slice(q.length))}</span><span class="n">${n} doc${n > 1 ? "s" : ""}</span></button></li>`;
+  }).join("") + (termos.length > 7 ? `<li class="note" style="padding:4px 8px">+ ${termos.length - 7} termos</li>` : "")
+    + (q && !termos.length ? `<li class="note" style="padding:4px 8px">Nenhum termo começa com “${esc(q)}”.</li>` : "");
+  $("#hero-meta").textContent = q ? `${termos.length} termo(s) em ${ms(dt)} ms` : "Digite algo";
+  $("#hero-docs").innerHTML = "";
+  if (termos.length) heroDocs(termos[0], ul.querySelector("button"));
+}
+function heroDocs(termo, btn) {
+  $$("#hero-list button").forEach(b => b.classList.toggle("sel", b === btn));
+  const f = [...MB.indice.frequencias(termo)].sort((a, b) => b[1] - a[1]);
+  $("#hero-docs").innerHTML = `<span class="note">“${esc(termo)}” aparece em:</span> <span class="chips" style="display:inline-flex;margin-top:4px">${f.map(([d, k]) => `<span class="chip">${esc(docCurto(d))} ×${k}</span>`).join("")}</span>`;
+}
+$("#hero-q").addEventListener("input", heroRender);
+$("#hero-list").addEventListener("click", e => { const b = e.target.closest("button[data-t]"); if (b) heroDocs(b.dataset.t, b); });
+
+/* =====================================================================
+   PRÉ-PROCESSAMENTO
+   ===================================================================== */
+function paragrafos(texto) { return texto.split(/\n\s*\n/).map(s => s.trim()).filter(s => s.length > 80); }
+(function initPP() {
+  const sel = $("#pp-doc");
+  sel.innerHTML = Object.keys(DADOS.documentos).sort().map(n => `<option value="${esc(n)}">${esc(n)}</option>`).join("");
+  const carregar = () => { $("#pp-text").value = paragrafos(DOCS[sel.value])[0].slice(0, 420); ppRender(); };
+  sel.addEventListener("change", carregar);
+  $("#pp-text").addEventListener("input", ppRender);
+  $("#pp-stem").addEventListener("change", ppRender);
+  carregar();
+})();
+function ppRender() {
+  const bruto = $("#pp-text").value;
+  const usar = $("#pp-stem").checked;
+  const n1 = normalizar(bruto);
+  const toks = tokenizar(n1);
+  const mantidos = removerStopwords(toks, STOPWORDS);
+  const stems = mantidos.map(stemInfo);
+  const linha = (lbl, sub, cnt, html) => `<div class="pstage"><div class="lbl">${lbl}<small>${sub}</small><span class="cnt">${cnt}</span></div><div>${html}</div></div>`;
+  $("#pp-out").innerHTML =
+    linha("1. Normalização", "Unicode NFC + minúsculas · normalizar()", `${fmt(bruto.length)} caracteres`, `<div class="ptext">${esc(n1)}</div>`) +
+    linha("2. Pontuação e números", "viram separadores e são descartados", `${fmt((n1.match(/[^\p{L}\s]/gu) || []).length)} removidos`, `<div class="ptext">${esc(n1).replace(/(&amp;|&lt;|&gt;|&quot;|&#39;|[^\p{L}\s])/gu, '<span class="rm">$1</span>')}</div>`) +
+    linha("3. Tokenização", "regex [^\\W\\d_]+ · tokenizar()", `${fmt(toks.length)} tokens`, `<div class="chips">${toks.map(t => `<span class="chip">${esc(t)}</span>`).join("")}</div>`) +
+    linha("4. Stopwords", `set com ${STOPWORDS.size} palavras + tokens de 1 letra`, `${fmt(mantidos.length)} mantidos`, `<div class="chips">${toks.map(t => (t.length > 1 && !STOPWORDS.has(t)) ? `<span class="chip ok">${esc(t)}</span>` : `<span class="chip out">${esc(t)}</span>`).join("")}</div>`) +
+    linha("5. Stemming", usar ? "remove o sufixo mais longo, radical ≥ 3 letras" : "desligado (padrão do programa)", usar ? `${fmt(new Set(stems.map(s => s[0])).size)} radicais distintos` : "—",
+      usar ? `<div class="chips">${stems.map(([r, s]) => `<span class="chip acc">${esc(r)}${s ? `<span class="suf">${esc(s)}</span>` : ""}</span>`).join("")}</div>`
+           : `<p class="note">Ative a opção acima para ver “algoritmos” e “algoritmo” virarem o mesmo radical “algoritm”.</p>`);
+}
+
+/* =====================================================================
+   TRIE VISUAL
+   ===================================================================== */
+const EXEMPLO = ["computador", "computação", "computacional", "compilador", "complexidade", "programação", "processador", "processamento"];
+const TV = { trie: null, ids: new Map(), prox: 0, timer: null, fila: [] };
+function tvNovo() { TV.trie = new Trie(); EXEMPLO.forEach(p => TV.trie.inserir(p)); TV.ids = new Map(); TV.prox = 0; }
+const tvId = no => { if (!TV.ids.has(no)) TV.ids.set(no, TV.prox++); return TV.ids.get(no); };
+const COLW = 40, ROWH = 30, PAD = 18, R = 11;
+function tvLayout() {
+  let folha = 0; const nos = [];
+  (function andar(no, ch, prof, pai, palavra) {
+    const me = { no, id: tvId(no), ch, prof, pai, fim: no.fim, palavra, y: 0, folha: no.filhos.size === 0 };
+    nos.push(me);
+    const ks = [...no.filhos.keys()].sort(cmpAlfa);
+    if (!ks.length) me.y = folha++;
+    else { const ys = ks.map(k => andar(no.filhos.get(k), k, prof + 1, me, palavra + k)); me.y = (ys[0] + ys[ys.length - 1]) / 2; }
+    return me.y;
+  })(TV.trie.raiz, "", 0, null, "");
+  return { nos, folhas: Math.max(folha, 1), prof: Math.max(...nos.map(n => n.prof)) };
+}
+const cx = n => PAD + n.prof * COLW + R;
+const cy = n => PAD + n.y * ROWH + ROWH / 2;
+function tvRender(ocultos = new Set(), prefim = null) {
+  const L = tvLayout();
+  const longest = Math.max(0, ...L.nos.filter(n => n.fim && n.folha).map(n => n.palavra.length));
+  const W = PAD * 2 + (L.prof + 2) * COLW + longest * 7.5;
+  const H = PAD * 2 + L.folhas * ROWH;
+  let s = `<svg id="tv-svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" role="img" aria-label="Desenho da Trie">`;
+  for (const n of L.nos) if (n.pai) {
+    const x1 = cx(n.pai) + R, y1 = cy(n.pai), x2 = cx(n) - R, y2 = cy(n), mx = (x1 + x2) / 2;
+    s += `<path class="te${ocultos.has(n.id) ? " hide" : ""}" data-c="${n.id}" d="M${x1} ${y1} C${mx} ${y1}, ${mx} ${y2}, ${x2} ${y2}"/>`;
+  }
+  for (const n of L.nos) {
+    const cls = ["tn"]; if (n.fim) cls.push("fim"); if (ocultos.has(n.id)) cls.push("hide"); if (n.id === prefim) cls.push("prefim");
+    s += `<g class="${cls.join(" ")}" data-id="${n.id}" transform="translate(${cx(n)} ${cy(n)})">`;
+    if (n.fim) s += `<circle class="ring" r="${R + 3.5}"/>`;
+    s += `<circle class="b" r="${n.prof ? R : 7}"/>`;
+    s += n.prof ? `<text>${esc(n.ch)}</text>` : `<text y="-17" style="font-size:10px;fill:var(--muted)">raiz</text>`;
+    if (n.fim && n.folha) s += `<text class="wl" x="${R + 9}">${esc(n.palavra)}</text>`;
+    s += `</g>`;
+  }
+  $("#tv-box").innerHTML = s + `</svg>`;
+  $("#tv-np").textContent = fmt(TV.trie.total); $("#tv-nn").textContent = fmt(TV.trie.nos);
+  return L;
+}
+const tvG = id => $(`#tv-svg g[data-id="${id}"]`);
+const tvE = id => $(`#tv-svg path[data-c="${id}"]`);
+function tvMarca(id, ...cls) { const g = tvG(id); if (g) g.classList.add(...cls); const e = tvE(id); if (e) { e.classList.remove("hide"); if (cls.includes("on") || cls.includes("novo")) e.classList.add("on"); if (cls.includes("sub")) e.classList.add("sub"); } }
+function tvCur(id) { $$("#tv-svg .tn.cur").forEach(g => g.classList.remove("cur")); if (id !== null) tvG(id)?.classList.add("cur"); }
+function tvLog(html, cls = "") { const li = document.createElement("li"); li.innerHTML = html; if (cls) li.className = cls; const ol = $("#tv-log"); ol.append(li); ol.scrollTop = ol.scrollHeight; }
+function tvScroll(id) { const g = tvG(id), box = $("#tv-box"); if (!g) return; const x = g.transform.baseVal[0].matrix.e; if (x < box.scrollLeft + 40 || x > box.scrollLeft + box.clientWidth - 60) box.scrollLeft = x - box.clientWidth / 2; }
+function tvRodar(passos) {
+  clearTimeout(TV.timer);
+  let k = 0;
+  const tick = () => {
+    const p = passos[k++]; p.f(); if (p.id !== undefined) tvScroll(p.id);
+    if (k < passos.length) { if (REDUZ) tick(); else TV.timer = setTimeout(tick, p.d ?? 420); }
+  };
+  tick();
+}
+function tvLer() { return normalizar($("#tv-in").value.trim()); }
+function tvInicio(txt) { clearTimeout(TV.timer); $("#tv-log").innerHTML = ""; $("#tv-res").innerHTML = ""; tvLog(txt); }
+
+function tvInserir(p) {
+  if (!p || !/^\p{L}+$/u.test(p)) { tvInicio(`Palavra inválida: use apenas letras.`); return; }
+  const caminho = []; let no = TV.trie.raiz;
+  const nova = TV.trie.inserir(p);
+  no = TV.trie.raiz; caminho.push(no);
+  for (const c of p) { no = no.filhos.get(c); caminho.push(no); }
+  const criados = caminho.map(n => !TV.ids.has(n));
+  caminho.forEach(tvId);
+  const ocultos = new Set(caminho.filter((n, i) => criados[i]).map(tvId));
+  tvRender(ocultos, nova ? tvId(caminho.at(-1)) : null);
+  tvInicio(`<code>inserir("${esc(p)}")</code>: m = ${p.length} caracteres. Começa na raiz.`);
+  const passos = [{ id: 0, f: () => { tvMarca(0, "on"); tvCur(0); } }];
+  [...p].forEach((c, i) => {
+    const id = tvId(caminho[i + 1]);
+    passos.push({ id, f: () => {
+      tvMarca(id, criados[i + 1] ? "novo" : "on"); tvCur(id);
+      tvLog(criados[i + 1] ? `‘${esc(c)}’ não está em <code>filhos</code>: cria um <b>NoTrie</b> novo.` : `‘${esc(c)}’ já existe: desce pelo caminho compartilhado.`);
+    } });
+  });
+  passos.push({ f: () => {
+    tvCur(null);
+    if (nova) { tvG(tvId(caminho.at(-1)))?.classList.remove("prefim"); tvLog(`Marca <code>fim_de_palavra = True</code>. ${criados.filter(Boolean).length} nó(s) criado(s). Retorna True.`, "res ok"); }
+    else tvLog(`O último nó já tinha <code>fim_de_palavra = True</code>: a palavra já existia. Retorna False, nada é duplicado.`, "res bad");
+    $("#tv-res").innerHTML = `<span class="chip ${nova ? "ok" : "out"}">${esc(p)}</span>`;
+  }, d: 600 });
+  tvRodar(passos);
+}
+function tvDescer(p, passos) {               // gera passos de _localizar_no; devolve o nó final ou null
+  let no = TV.trie.raiz, ant = 0;
+  passos.push({ id: 0, f: () => { tvMarca(0, "on"); tvCur(0); } });
+  for (const c of p) {
+    const prox = no.filhos.get(c);
+    if (!prox) {
+      const idAnt = ant;
+      passos.push({ id: idAnt, f: () => {
+        const g = tvG(idAnt); const t = g.transform.baseVal[0].matrix;
+        const gh = document.createElementNS("http://www.w3.org/2000/svg", "g");
+        gh.setAttribute("class", "ghost"); gh.setAttribute("transform", `translate(${t.e + COLW} ${t.f})`);
+        gh.innerHTML = `<circle r="${R}"/><text>${esc(c)}</text>`; $("#tv-svg").append(gh);
+        const svg = $("#tv-svg"); const w = Math.max(+svg.getAttribute("width"), t.e + COLW + 30);
+        svg.setAttribute("width", w); svg.setAttribute("viewBox", `0 0 ${w} ${svg.getAttribute("height")}`);
+        tvLog(`‘${esc(c)}’ não está em <code>filhos</code>: <code>filhos.get()</code> devolve None e a busca para.`);
+      } });
+      return null;
+    }
+    no = prox; const id = tvId(no); ant = id;
+    passos.push({ id, f: () => { tvMarca(id, "on"); tvCur(id); tvLog(`‘${esc(c)}’ encontrado: desce um nível.`); } });
+  }
+  return no;
+}
+function tvBuscar(p) {
+  tvRender(); tvInicio(`<code>buscar("${esc(p)}")</code>: desce m = ${p.length} níveis, um por caractere.`);
+  const passos = []; const no = tvDescer(p, passos);
+  passos.push({ f: () => {
+    tvCur(null);
+    if (!no) { tvLog(`Resultado: “${esc(p)}” NÃO existe na Trie.`, "res bad"); $("#tv-res").innerHTML = `<span class="chip out">${esc(p)}</span>`; }
+    else if (!no.fim) { tvLog(`O caminho existe, mas <code>fim_de_palavra = False</code>: “${esc(p)}” é só um prefixo. NÃO existe como palavra.`, "res bad"); $("#tv-res").innerHTML = `<span class="chip out">${esc(p)}</span>`; }
+    else { tvG(tvId(no))?.classList.add("achado"); tvLog(`<code>fim_de_palavra = True</code>: “${esc(p)}” EXISTE na Trie.`, "res ok"); $("#tv-res").innerHTML = `<span class="chip ok">${esc(p)}</span>`; }
+  } });
+  tvRodar(passos);
+}
+function tvPrefixo(p) {
+  tvRender(); tvInicio(`<code>buscar_prefixo("${esc(p)}")</code>: primeiro desce p = ${p.length} níveis até o nó do prefixo.`);
+  const passos = []; const no = tvDescer(p, passos);
+  if (!no) { passos.push({ f: () => { tvCur(null); tvLog(`Nenhuma palavra começa com “${esc(p)}”. Retorna [].`, "res bad"); } }); tvRodar(passos); return; }
+  passos.push({ f: () => tvLog(`Agora uma DFS iterativa: tira o topo da pilha, registra se é fim de palavra, empilha os filhos em ordem alfabética reversa.`) });
+  const pilha = [[no, p]]; let visit = 0, achou = 0;
+  while (pilha.length) {
+    const [atual, texto] = pilha.pop(); const id = tvId(atual); visit++;
+    const fim = atual.fim; if (fim) achou++;
+    passos.push({ id, d: 170, f: () => {
+      tvMarca(id, "sub"); tvCur(id);
+      if (fim) { tvG(id).classList.add("achado"); $("#tv-res").insertAdjacentHTML("beforeend", `<span class="chip ok">${esc(texto)}</span>`); }
+    } });
+    [...atual.filhos.keys()].sort(cmpAlfa).reverse().forEach(c => pilha.push([atual.filhos.get(c), texto + c]));
+  }
+  passos.push({ f: () => { tvCur(null); tvLog(`A DFS visitou ${visit} nó(s) e encontrou ${achou} palavra(s), já em ordem alfabética.`, "res ok"); } });
+  tvRodar(passos);
+}
+$("#tv-ins").onclick = () => tvInserir(tvLer());
+$("#tv-busca").onclick = () => tvBuscar(tvLer());
+$("#tv-pref").onclick = () => tvPrefixo(tvLer());
+$("#tv-reset").onclick = () => { clearTimeout(TV.timer); tvNovo(); tvRender(); $("#tv-log").innerHTML = ""; $("#tv-res").innerHTML = ""; };
+$$("[data-tv]").forEach(b => b.onclick = () => {
+  const [op, w] = b.dataset.tv.split(":"); $("#tv-in").value = w;
+  ({ ins: tvInserir, busca: tvBuscar, pref: tvPrefixo })[op](w);
+});
+$("#tv-in").addEventListener("keydown", e => { if (e.key === "Enter") tvInserir(tvLer()); });
+tvNovo(); tvRender();
+
+/* =====================================================================
+   AUTOCOMPLETE (Parte I)
+   ===================================================================== */
+const AC = { trie: new Trie() };
+(function initAC() {
+  const t0 = performance.now();
+  for (const linha of DADOS.palavras.split(/\r?\n/)) { const p = normalizar(linha.trim()); if (p) AC.trie.inserir(p); }
+  const dt = performance.now() - t0, carregadas = AC.trie.total;
+  EXEMPLO.forEach(p => AC.trie.inserir(p));
+  AC.info = `${fmt(carregadas)} palavras carregadas de 'palavras.txt' em ${dt.toFixed(2)} ms (${fmt(AC.trie.nos)} nós na Trie).`;
+  acStats(); acOut(`<span class="dim">${AC.info}</span>\n`);
+})();
+function acStats() { $("#ac-stats").innerHTML = `<span>Palavras cadastradas <b>${fmt(AC.trie.total)}</b></span><span>nós <b>${fmt(AC.trie.nos)}</b></span>`; }
+function acOut(html) { const t = $("#ac-term"); t.insertAdjacentHTML("beforeend", html); t.scrollTop = t.scrollHeight; }
+function acSug() {
+  const q = normalizar($("#ac-in").value.trim());
+  const r = q ? AC.trie.buscarPrefixo(q, 8) : [];
+  $("#ac-sug").innerHTML = r.map(w => `<li><button class="chip" data-w="${esc(w)}"><b>${esc(w.slice(0, q.length))}</b>${esc(w.slice(q.length))}</button></li>`).join("") || `<li class="note">${q ? "sem sugestões" : ""}</li>`;
+}
+$("#ac-in").addEventListener("input", acSug);
+$("#ac-sug").addEventListener("click", e => { const b = e.target.closest("[data-w]"); if (b) { $("#ac-in").value = b.dataset.w; acSug(); } });
+$("#ac-1").onclick = () => {
+  const p = normalizar($("#ac-in").value.trim()); const t0 = performance.now(); const ex = AC.trie.buscar(p); const dt = performance.now() - t0;
+  acOut(`\n<span class="p">Escolha uma opção:</span> 1\n<span class="p">Digite a palavra:</span> ${esc(p)}\n<span class="${ex ? "ok" : "bad"}">'${esc(p)}' ${ex ? "EXISTE" : "NÃO existe"} na Trie.</span>  (${ms(dt)} ms)\n`);
+};
+$("#ac-2").onclick = () => {
+  const p = normalizar($("#ac-in").value.trim()); const t0 = performance.now(); const r = AC.trie.buscarPrefixo(p); const dt = performance.now() - t0;
+  let s = `\n<span class="p">Escolha uma opção:</span> 2\n<span class="p">Digite o prefixo:</span> ${esc(p)}\n`;
+  s += r.length ? `\nPalavras encontradas (${r.length}):\n` + r.map(w => `  ${esc(w)}`).join("\n") + "\n" : `<span class="bad">Nenhuma palavra encontrada com esse prefixo.</span>\n`;
+  acOut(s + `<span class="dim">Tempo da consulta: ${ms(dt)} ms</span>\n`);
+};
+$("#ac-3").onclick = () => {
+  const p = normalizar($("#ac-in").value.trim());
+  let s = `\n<span class="p">Escolha uma opção:</span> 3\n<span class="p">Nova palavra:</span> ${esc(p)}\n`;
+  if (!/^\p{L}+$/u.test(p)) s += `<span class="bad">Palavra inválida (use apenas letras).</span>\n`;
+  else if (AC.trie.inserir(p)) s += `<span class="ok">'${esc(p)}' inserida com sucesso.</span>\n`;
+  else s += `<span class="bad">'${esc(p)}' já estava cadastrada.</span>\n`;
+  acOut(s); acStats(); acSug();
+};
+$("#ac-clr").onclick = () => { $("#ac-term").innerHTML = ""; };
+$("#ac-in").addEventListener("keydown", e => { if (e.key === "Enter") $("#ac-2").click(); });
+acSug();
+
+/* =====================================================================
+   TABELA HASH (didática)
+   ===================================================================== */
+const HT = { tam: 8, slots: [], n: 0, timer: null };
+const HT_EX = ["dados", "busca", "algoritmo", "rede"];
+function hashPoli(s) { let h = 0; for (const c of s) h = (Math.imul(h, 31) + c.codePointAt(0)) >>> 0; return h; }
+function htReset() { HT.tam = 8; HT.slots = new Array(8).fill(null); HT.n = 0; HT_EX.forEach(t => htPor(t)); htRender(); $("#ht-calc").textContent = "Insira ou busque um termo para ver o cálculo da posição."; }
+function htPor(t) { let i = hashPoli(t) % HT.tam; while (HT.slots[i] && HT.slots[i] !== t) i = (i + 1) % HT.tam; if (!HT.slots[i]) { HT.slots[i] = t; HT.n++; } return i; }
+function htRender(marcas = {}) {
+  $("#ht-tab").innerHTML = HT.slots.map((t, i) => {
+    let v = "";
+    if (t) { const f = MB.indice.frequencias(t); v = f.size ? `{${[...f].slice(0, 2).map(([d, k]) => `${esc(docCurto(d).slice(0, 10))}: ${k}`).join(", ")}${f.size > 2 ? `, +${f.size - 2}` : ""}}` : "{} fora do corpus"; }
+    return `<div class="slot ${t ? "" : "vazio"} ${marcas[i] || ""}" data-i="${i}"><div class="i">[${i}]</div><div class="t">${t ? esc(t) : "vazio"}</div><div class="v">${v}</div></div>`;
+  }).join("");
+  $("#ht-oc").textContent = `${HT.n}/${HT.tam}`; $("#ht-fill").style.width = `${HT.n / HT.tam * 100}%`;
+}
+function htAnimar(t, inserir) {
+  clearTimeout(HT.timer);
+  if (!t) return;
+  let calc = "";
+  if (inserir && !HT.slots.includes(t) && HT.n + 1 > HT.tam * 2 / 3) {
+    const antigos = HT.slots.filter(Boolean); HT.tam *= 2; HT.slots = new Array(HT.tam).fill(null); HT.n = 0;
+    antigos.forEach(htPor);
+    calc += `Ocupação passaria de 2/3: a tabela dobra para ${HT.tam} posições e todas as chaves são reinseridas (rehash).\n`;
+  }
+  const h = hashPoli(t), i0 = h % HT.tam;
+  calc += `hash("${t}") = ${fmt(h)}\nposição = ${fmt(h)} mod ${HT.tam} = ${i0}\n`;
+  const seq = []; let i = i0;
+  while (HT.slots[i] && HT.slots[i] !== t) { seq.push(i); i = (i + 1) % HT.tam; }
+  const achou = HT.slots[i] === t;
+  seq.forEach(k => calc += `[${k}] ocupada por "${HT.slots[k]}" → colisão, tenta [${(k + 1) % HT.tam}]\n`);
+  if (inserir) calc += achou ? `[${i}] já contém "${t}" → só atualiza o valor (sem duplicar)` : `[${i}] livre → grava "${t}" com ${seq.length} colisão(ões)`;
+  else calc += achou ? `[${i}] contém "${t}" → ENCONTRADO após ${seq.length + 1} acesso(s)` : `[${i}] vazia → "${t}" NÃO está na tabela`;
+  $("#ht-calc").textContent = calc;
+  htRender();
+  const passos = [...seq.map(k => ({ k, c: "probe" })), { k: i, c: (achou || inserir) ? "alvo" : "probe" }];
+  let n = 0; const marcas = {};
+  const tick = () => {
+    const p = passos[n++];
+    if (n === passos.length && inserir && !achou) { HT.slots[i] = t; HT.n++; }
+    Object.keys(marcas).forEach(k => { if (marcas[k] === "cur") marcas[k] = "probe"; });
+    marcas[p.k] = n === passos.length ? p.c : "cur";
+    htRender(marcas);
+    if (n < passos.length) HT.timer = setTimeout(tick, REDUZ ? 0 : 450);
+  };
+  tick();
+}
+$("#ht-ins").onclick = () => htAnimar(normalizar($("#ht-in").value.trim()), true);
+$("#ht-busca").onclick = () => htAnimar(normalizar($("#ht-in").value.trim()), false);
+$("#ht-reset").onclick = () => { clearTimeout(HT.timer); htReset(); };
+$("#ht-in").addEventListener("keydown", e => { if (e.key === "Enter") $("#ht-ins").click(); });
+
+/* ---------- índice invertido real ---------- */
+function ixConsultar(termoBruto) {
+  const termo = normalizar(termoBruto.trim());
+  const t0 = performance.now(); const f = [...MB.indice.frequencias(termo)].sort((a, b) => b[1] - a[1] || (a[0] < b[0] ? -1 : 1)); const dt = performance.now() - t0;
+  const max = Math.max(1, ...f.map(x => x[1]));
+  $("#ix-out").innerHTML = f.length
+    ? `<p class="resline">“${esc(termo)}” → ${f.length} documento(s), ${f.reduce((s, x) => s + x[1], 0)} ocorrência(s)<span class="tm">${ms(dt)} ms</span></p>
+       <div class="bars">${f.map(([d, k]) => `<div class="bar"><span class="nm" title="${esc(d)}">${esc(docCurto(d))}</span><span class="tr"><i style="width:${k / max * 100}%"></i></span><span class="vl">${k}</span></div>`).join("")}</div>
+       <p class="via">indice["${esc(termo)}"] = {${f.map(([d, k]) => `"${esc(d)}": ${k}`).join(", ")}}</p>`
+    : `<p class="resline">“${esc(termo)}” não é uma chave do índice.<span class="tm">${ms(dt)} ms</span></p><p class="note">Stopwords e palavras de uma letra nunca entram no índice. Tente “trie”, “memória” ou “protocolo”.</p>`;
+}
+function ixTop() {
+  const lin = [...MB.indice.idx].map(([t, p]) => [t, [...p.values()].reduce((a, b) => a + b, 0), p.size]).sort((a, b) => b[1] - a[1] || (a[0] < b[0] ? -1 : 1)).slice(0, 10);
+  $("#ix-top").innerHTML = `<thead><tr><th>Termo</th><th class="num">Ocorrências</th><th class="num">Docs</th></tr></thead><tbody>${lin.map(([t, o, d]) => `<tr class="clk" data-t="${esc(t)}" tabindex="0"><td class="mono">${esc(t)}</td><td class="num">${o}</td><td class="num">${d}</td></tr>`).join("")}</tbody>`;
+}
+$("#ix-go").onclick = () => ixConsultar($("#ix-in").value);
+$("#ix-in").addEventListener("keydown", e => { if (e.key === "Enter") ixConsultar($("#ix-in").value); });
+$("#ix-top").addEventListener("click", e => { const tr = e.target.closest("tr[data-t]"); if (tr) { $("#ix-in").value = tr.dataset.t; ixConsultar(tr.dataset.t); } });
+$("#ix-top").addEventListener("keydown", e => { const tr = e.target.closest("tr[data-t]"); if (tr && e.key === "Enter") { $("#ix-in").value = tr.dataset.t; ixConsultar(tr.dataset.t); } });
+
+/* =====================================================================
+   MECANISMO DE BUSCA (Parte II)
+   ===================================================================== */
+function mbKpis() {
+  $("#mb-kpis").innerHTML = [
+    [Object.keys(MB.documentos).length, "documentos processados"],
+    [MB.totalPalavras, "total de palavras (pós-tokenização)"],
+    [MB.indice.tamanho, "termos distintos (vocabulário)"],
+    [MB.trie.nos, "nós na Trie"],
+  ].map(([v, l]) => `<div class="kpi"><div class="v">${fmt(v)}</div><div class="l">${l}</div></div>`).join("");
+}
+function mbPalavra() {
+  const { termo, docs, tempo } = MB.buscarPalavra($("#mb-palavra").value);
+  const max = Math.max(1, ...docs.map(d => d[1]));
+  $("#r-palavra").innerHTML = (docs.length
+    ? `<p class="resline">Termo <b>'${esc(termo)}'</b> encontrado em ${docs.length} arquivo(s):<span class="tm">${ms(tempo)} ms</span></p>
+       <div class="bars">${docs.map(([d, k]) => `<div class="bar"><span class="nm">${esc(d)}</span><span class="tr"><i style="width:${k / max * 100}%"></i></span><span class="vl">${k}×</span></div>`).join("")}</div>`
+    : `<p class="resline">Termo <b>'${esc(termo)}'</b> não encontrado em nenhum documento.<span class="tm">${ms(tempo)} ms</span></p>`)
+    + `<p class="via">“${esc($("#mb-palavra").value)}” → preprocessar() → '${esc(termo)}' → indice.frequencias('${esc(termo)}') · O(1) médio${MB.usarStemming ? " · com stemming" : ""}</p>`;
+}
+function mbPrefixo() {
+  const { res, tempo } = MB.buscarPrefixo($("#mb-prefixo").value);
+  $("#r-prefixo").innerHTML = (res.length
+    ? `<p class="resline">Palavras encontradas (${res.length}):<span class="tm">${ms(tempo)} ms</span></p><div class="tscroll"><table><thead><tr><th>Termo (Trie)</th><th>Documentos (índice)</th></tr></thead><tbody>${res.map(([t, ds]) => `<tr><td class="mono">${esc(t)}</td><td><div class="chips">${ds.map(d => `<span class="chip">${esc(d)}</span>`).join("")}</div></td></tr>`).join("")}</tbody></table></div>`
+    : `<p class="resline">Nenhuma palavra encontrada com esse prefixo.<span class="tm">${ms(tempo)} ms</span></p>`)
+    + `<p class="via">trie.buscar_prefixo() → para cada termo, indice.documentos_do_termo()</p>`;
+}
+function mbSeq() {
+  const entrada = $("#mb-seq").value;
+  const { res, tempo } = MB.buscarSequencia(entrada);
+  $("#r-seq").innerHTML = (res.length
+    ? `<p class="resline">Sequência encontrada em ${res.length} arquivo(s):<span class="tm">${ms(tempo)} ms</span></p>` + res.map(([n, q, pos, tam]) => {
+        const o = MB.documentos[n], ini = Math.max(0, pos - 30), fim = Math.min(o.length, pos + tam + 30);
+        const lim = s => esc(s.replace(/\n/g, " "));
+        return `<div class="snip"><div class="h"><b>${esc(n)}</b><span class="note">${q}×</span></div>${ini ? "…" : ""}${lim(o.slice(ini, pos))}<mark>${lim(o.slice(pos, pos + tam))}</mark>${lim(o.slice(pos + tam, fim))}${fim < o.length ? "…" : ""}</div>`;
+      }).join("")
+    : `<p class="resline">Sequência não encontrada.<span class="tm">${ms(tempo)} ms</span></p>`)
+    + `<p class="via">KMP no texto normalizado de cada documento (stopwords incluídas) · O(n + m) por documento</p>`;
+}
+function mbDocs() {
+  $("#r-docs").innerHTML = `<p class="resline">Documentos indexados:</p>` + Object.keys(MB.documentos).map((n, i) =>
+    `<details class="doc"><summary><span class="d">D${i + 1}</span><span class="nm">${esc(n)}</span><span class="note">${fmt(MB.tokens[n].length)} palavras</span></summary><div class="body">${esc(MB.documentos[n])}</div></details>`).join("");
+}
+function mbStats() {
+  const t = MB.tempos;
+  const linhas = [
+    ["Documentos processados", Object.keys(MB.documentos).length], ["Total de palavras (pós-tokenização)", fmt(MB.totalPalavras)],
+    ["Termos distintos (vocabulário)", fmt(MB.indice.tamanho)], ["Palavras armazenadas na Trie", fmt(MB.trie.total)], ["Nós da Trie", fmt(MB.trie.nos)],
+    ["Stemming", MB.usarStemming ? "ativado" : "desativado"], ["Tempo de pré-processamento", `${t.preprocessamento.toFixed(2)} ms`],
+    ["Tempo de construção do índice", `${t.indice.toFixed(2)} ms`], ["Tempo de construção da Trie", `${t.trie.toFixed(2)} ms`],
+  ];
+  $("#r-stats").innerHTML = `<div class="cols"><div><dl class="st">${linhas.map(([a, b]) => `<dt>${a}</dt><dd>${b}</dd>`).join("")}</dl></div><div>
+    <h3 style="margin-bottom:8px">Consultas realizadas</h3>${MB.historico.length
+      ? `<div class="tscroll"><table><thead><tr><th>Tipo</th><th>Consulta</th><th class="num">Tempo (ms)</th></tr></thead><tbody>${MB.historico.map(([a, b, c]) => `<tr><td>${a}</td><td class="mono">'${esc(b)}'</td><td class="num">${ms(c)}</td></tr>`).join("")}</tbody></table></div>`
+      : `<p class="note">Nenhuma consulta realizada ainda.</p>`}</div></div>
+    <p class="note" style="margin-top:12px">Tempos medidos neste navegador com <code>performance.now()</code>. Os navegadores arredondam esse relógio, então consultas muito rápidas podem aparecer como 0,0000 ms.</p>`;
+}
+function mbNovo() {
+  let nome = $("#nv-nome").value.trim() || "novo.txt"; if (!/\.txt$/i.test(nome)) nome += ".txt";
+  const texto = $("#nv-texto").value;
+  if (MB.documentos[nome]) { $("#r-novo").innerHTML = `<p class="resline" style="color:var(--bad)">Já existe um documento chamado ${esc(nome)}. Escolha outro nome.</p>`; return; }
+  DOCS[nome] = texto;
+  const r = MB.adicionar(nome, texto);
+  mbKpis(); ixTop(); heroRender();
+  $("#r-novo").innerHTML = `<p class="resline"><b>${esc(nome)}</b> processado em ${ms(r.tempo)} ms.</p>
+    <dl class="st"><dt>Tokens após pré-processamento</dt><dd>${r.tokens.length}</dd><dt>Entradas do índice atualizadas</dt><dd>${new Set(r.tokens).size}</dd><dt>Termos novos no vocabulário</dt><dd>${r.vocabAntes} → ${MB.indice.tamanho}</dd></dl>
+    <p class="note" style="margin-top:10px">Inseridos na Trie (${r.novosTermos.length}):</p><div class="chips">${r.novosTermos.map(t => `<span class="chip novo ok">${esc(t)}</span>`).join("") || `<span class="note">nenhum: todos os termos já existiam.</span>`}</div>
+    <p class="note" style="margin-top:10px">Agora ele aparece nas buscas desta página. Experimente buscar a palavra “hashing” ou o prefixo “acel”.</p>`;
+}
+const MB_RENDER = { palavra: mbPalavra, prefixo: mbPrefixo, seq: mbSeq, docs: mbDocs, stats: mbStats, novo: () => {} };
+let mbAba = "palavra";
+function mbTab(tab) {
+  mbAba = tab;
+  $$("#mb-tabs button").forEach(b => b.setAttribute("aria-selected", b.dataset.tab === tab));
+  $$("[data-panel]").forEach(p => p.hidden = p.dataset.panel !== tab);
+  if (tab === "docs" || tab === "stats") MB_RENDER[tab]();
+}
+$("#mb-tabs").addEventListener("click", e => { const b = e.target.closest("button[data-tab]"); if (b) mbTab(b.dataset.tab); });
+$("#f-palavra").addEventListener("submit", e => { e.preventDefault(); mbPalavra(); });
+$("#f-prefixo").addEventListener("submit", e => { e.preventDefault(); mbPrefixo(); });
+$("#f-seq").addEventListener("submit", e => { e.preventDefault(); mbSeq(); });
+$("#f-novo").addEventListener("submit", e => { e.preventDefault(); mbNovo(); });
+$("#mb-stem").addEventListener("change", e => {
+  MB = new MecanismoBusca(DOCS, e.target.checked).construir();
+  mbKpis(); ixTop(); heroRender(); mbPalavra(); mbPrefixo(); mbSeq(); MB.historico = [];
+  if (mbAba === "docs" || mbAba === "stats") MB_RENDER[mbAba]();
+});
+mbKpis(); mbPalavra(); mbPrefixo(); mbSeq(); MB.historico = [];
+
+/* =====================================================================
+   KMP passo a passo
+   ===================================================================== */
+const KM = { passos: [], k: 0, timer: null, texto: "", padrao: "", lps: [] };
+function kmPreparar() {
+  clearInterval(KM.timer); KM.timer = null; $("#km-play").textContent = "Reproduzir";
+  KM.texto = $("#km-t").value; KM.padrao = $("#km-p").value; KM.lps = tabelaPrefixo(KM.padrao); KM.k = 0;
+  const T = KM.texto, P = KM.padrao, lps = KM.lps, passos = []; let j = 0, cmp = 0;
+  if (P) for (let i = 0; i < T.length; i++) {
+    while (j > 0 && T[i] !== P[j]) { cmp++; passos.push({ i, j, tipo: "falha", novoJ: lps[j - 1], cmp }); j = lps[j - 1]; }
+    cmp++;
+    if (T[i] === P[j]) { passos.push({ i, j, tipo: "casa", cmp }); j++; if (j === P.length) { passos.push({ i, j, tipo: "achou", pos: i - j + 1, novoJ: lps[j - 1], cmp }); j = lps[j - 1]; } }
+    else passos.push({ i, j, tipo: "difere", cmp });
+  }
+  KM.passos = passos;
+  let ing = 0; for (let s = 0; s + P.length <= T.length && P; s++) for (let q = 0; q < P.length; q++) { ing++; if (T[s + q] !== P[q]) break; }
+  $("#km-cn").textContent = fmt(ing);
+  $("#km-lps").innerHTML = [...P].map((c, x) => `<div><div class="h">${x}</div><div class="c">${esc(c === " " ? "␣" : c)}</div><div class="v" data-x="${x}">${lps[x]}</div></div>`).join("");
+  kmDesenhar(null);
+  $("#km-msg").innerHTML = P ? `Pronto: texto com n = ${T.length}, padrão com m = ${P.length}. Use <b>Próximo passo</b> ou <b>Reproduzir</b>.` : "Digite um padrão.";
+}
+function kmDesenhar(p) {
+  const T = KM.texto, P = KM.padrao, cel = c => esc(c === " " ? "␣" : c);
+  const achados = new Set(); for (const q of KM.passos.slice(0, KM.k)) if (q.tipo === "achou") for (let x = 0; x < P.length; x++) achados.add(q.pos + x);
+  const off = !p ? 0 : p.tipo === "achou" ? p.pos : p.i - p.j, jv = p ? (p.tipo === "achou" ? P.length : p.j) : 0;
+  const idx = [...T].map((_, i) => `<div class="kc">${i}</div>`).join("");
+  const tx = [...T].map((c, i) => {
+    let cls = c === " " ? "kc sp" : "kc";
+    if (achados.has(i)) cls += " achado";
+    if (p && i >= off && i < p.i && p.tipo !== "achou") cls += " casado";
+    if (p && p.tipo === "achou" && i >= p.pos && i <= p.i) cls += " casado";
+    if (p && i === p.i && p.tipo !== "achou") cls += p.tipo === "casa" ? " cmp-ok" : " cmp-bad";
+    return `<div class="${cls}">${cel(c)}</div>`;
+  }).join("");
+  const pt = [...P].map((c, x) => {
+    let cls = c === " " ? "kc sp" : "kc";
+    if (p && (x < jv || (p.tipo === "achou"))) cls += " casado";
+    if (p && x === p.j && p.tipo !== "achou") cls = cls.replace(" casado", "") + (p.tipo === "casa" ? " cmp-ok" : " cmp-bad");
+    return `<div class="${cls}">${cel(c)}</div>`;
+  }).join("");
+  $("#km-grid").innerHTML = `<div class="krow idx">${idx}</div><div class="krow">${tx}</div><div class="krow pat" style="padding-left:${off * 30}px">${pt}</div>`;
+  $$("#km-lps .v").forEach(v => v.classList.toggle("use", !!p && (p.tipo === "falha" || p.tipo === "achou") && +v.dataset.x === (p.tipo === "achou" ? P.length - 1 : p.j - 1)));
+  $("#km-ck").textContent = p ? fmt(p.cmp) : "0";
+  const g = $("#km-grid"); if (p) { const x = p.i * 30; if (x < g.scrollLeft || x > g.scrollLeft + g.clientWidth - 40) g.scrollLeft = x - g.clientWidth / 2; }
+}
+function kmPasso() {
+  if (KM.k >= KM.passos.length) {
+    const tot = KM.passos.filter(p => p.tipo === "achou").length;
+    $("#km-msg").innerHTML = `<b>Fim do texto.</b> ${tot} ocorrência(s) em ${fmt(KM.passos.at(-1)?.cmp || 0)} comparações; o índice i nunca voltou.`;
+    clearInterval(KM.timer); KM.timer = null; $("#km-play").textContent = "Reproduzir"; return false;
+  }
+  const p = KM.passos[KM.k++]; kmDesenhar(p);
+  const T = KM.texto, P = KM.padrao, c = x => `‘${esc(x === " " ? "␣" : x)}’`;
+  $("#km-msg").innerHTML = {
+    casa: `texto[${p.i}] = ${c(T[p.i])} igual a padrão[${p.j}] = ${c(P[p.j])}: casou, avança i e j.`,
+    difere: `texto[${p.i}] = ${c(T[p.i])} ≠ padrão[0] = ${c(P[0])}: com j = 0 não há o que reaproveitar, só avança i.`,
+    falha: `texto[${p.i}] = ${c(T[p.i])} ≠ padrão[${p.j}] = ${c(P[p.j])}. Em vez de voltar no texto, j recua para <b>lps[${p.j - 1}] = ${p.novoJ}</b>: os ${p.novoJ} primeiros caracteres do padrão já estão casados.`,
+    achou: `<b>Ocorrência na posição ${p.pos}.</b> Para continuar procurando, j = lps[${P.length - 1}] = ${p.novoJ}.`,
+  }[p.tipo];
+  return true;
+}
+$("#km-step").onclick = () => { clearInterval(KM.timer); KM.timer = null; $("#km-play").textContent = "Reproduzir"; kmPasso(); };
+$("#km-play").onclick = () => {
+  if (KM.timer) { clearInterval(KM.timer); KM.timer = null; $("#km-play").textContent = "Reproduzir"; return; }
+  if (KM.k >= KM.passos.length) kmPreparar();
+  $("#km-play").textContent = "Pausar"; KM.timer = setInterval(kmPasso, REDUZ ? 60 : 650); kmPasso();
+};
+$("#km-reset").onclick = kmPreparar;
+$("#km-t").addEventListener("input", kmPreparar); $("#km-p").addEventListener("input", kmPreparar);
+$$("[data-km]").forEach(b => b.onclick = () => { const [t, p] = b.dataset.km.split("|"); $("#km-t").value = t; $("#km-p").value = p; kmPreparar(); });
+kmPreparar();
+
+/* =====================================================================
+   EXPERIMENTO DE ESCALA
+   ===================================================================== */
+const EX_PY = [   // saída de "python experimento_escala.py"
+  { k: 1, tokens: 2907, pre: 2.29, idx: 0.64, trie: 2.94, busca: 0.0003, pref: 0.0656 },
+  { k: 2, tokens: 5814, pre: 3.86, idx: 0.89, trie: 2.75, busca: 0.0002, pref: 0.0659 },
+  { k: 4, tokens: 11628, pre: 7.74, idx: 1.74, trie: 3.00, busca: 0.0004, pref: 0.0652 },
+  { k: 8, tokens: 23256, pre: 15.49, idx: 3.47, trie: 3.08, busca: 0.0006, pref: 0.0654 },
+  { k: 16, tokens: 46512, pre: 31.02, idx: 7.46, trie: 3.56, busca: 0.0006, pref: 0.0653 },
+  { k: 32, tokens: 93024, pre: 61.84, idx: 15.46, trie: 4.28, busca: 0.0010, pref: 0.0656 },
+];
+let EX_JS = null;
+const SERIES = [["pre", "Pré-processamento", "--s1"], ["idx", "Índice invertido", "--s2"], ["trie", "Trie", "--s3"]];
+function exMedir(f, rep = 200) { const t = performance.now(); for (let i = 0; i < rep; i++) f(); return (performance.now() - t) / rep; }
+function exRodarJS() {
+  const base = Object.fromEntries(Object.entries(DADOS.documentos));
+  const out = [];
+  for (const k of [1, 2, 4, 8, 16, 32]) {
+    const docs = {}; for (const n in base) for (let i = 0; i < k; i++) docs[`${i}_${n}`] = base[n];
+    const m = new MecanismoBusca(docs).construir();
+    out.push({ k, tokens: m.totalPalavras, pre: m.tempos.preprocessamento, idx: m.tempos.indice, trie: m.tempos.trie,
+      busca: exMedir(() => m.indice.frequencias("algoritmos")), pref: exMedir(() => m.trie.buscarPrefixo("comp")) });
+  }
+  return out;
+}
+function niceStep(v) { const p = Math.pow(10, Math.floor(Math.log10(v))); for (const m of [1, 2, 2.5, 5, 10]) if (m * p >= v) return m * p; return 10 * p; }
+function exDesenhar(dados, origem) {
+  const W = 680, H = 300, M = { l: 48, r: 130, t: 14, b: 40 };
+  const xmax = 100000, vmax = Math.max(...dados.flatMap(d => SERIES.map(s => d[s[0]]))), passo = niceStep(vmax / 4), ymax = Math.ceil(vmax / passo) * passo, nt = Math.round(ymax / passo);
+  const X = v => M.l + v / xmax * (W - M.l - M.r), Y = v => H - M.b - v / ymax * (H - M.t - M.b);
+  let s = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Tempo de construção em milissegundos por número de tokens">`;
+  for (let i = 0; i <= nt; i++) { const v = passo * i, y = Y(v); s += `<line class="${i ? "grid-l" : "ax"}" x1="${M.l}" x2="${W - M.r}" y1="${y}" y2="${y}"/><text class="tick" x="${M.l - 8}" y="${y}" text-anchor="end" dominant-baseline="central">${+v.toFixed(1)}</text>`; }
+  for (let v = 0; v <= xmax; v += 20000) s += `<text class="tick" x="${X(v)}" y="${H - M.b + 16}" text-anchor="middle">${v ? v / 1000 + " mil" : "0"}</text>`;
+  s += `<text class="tick" x="${(M.l + W - M.r) / 2}" y="${H - 4}" text-anchor="middle">tokens após o pré-processamento</text>`;
+  s += `<text class="tick" x="${M.l - 8}" y="${M.t - 2}" text-anchor="end">ms</text>`;
+  const ends = [];
+  for (const [key, nome, cor] of SERIES) {
+    s += `<polyline fill="none" stroke="var(${cor})" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" points="${dados.map(d => `${X(d.tokens)},${Y(d[key])}`).join(" ")}"/>`;
+    s += dados.map(d => `<circle cx="${X(d.tokens)}" cy="${Y(d[key])}" r="4" fill="var(${cor})" stroke="var(--surface)" stroke-width="2"/>`).join("");
+    const last = dados.at(-1); ends.push({ y: Y(last[key]), nome, v: last[key] });
+  }
+  ends.sort((a, b) => a.y - b.y); for (let i = 1; i < ends.length; i++) if (ends[i].y - ends[i - 1].y < 15) ends[i].y = ends[i - 1].y + 15;
+  ends.forEach(e => s += `<text class="dlab" x="${X(dados.at(-1).tokens) + 10}" y="${e.y}" dominant-baseline="central">${e.nome}</text>`);
+  s += `<line class="xhair" id="ex-x" y1="${M.t}" y2="${H - M.b}" visibility="hidden"/><rect id="ex-hit" x="${M.l}" y="${M.t}" width="${W - M.l - M.r}" height="${H - M.t - M.b}" fill="transparent"/></svg><div class="tip" id="ex-tip" hidden></div>`;
+  const box = $("#ex-chart"); box.innerHTML = s;
+  $("#ex-lg").innerHTML = SERIES.map(([, n, c]) => `<span><i style="background:var(${c})"></i>${n}</span>`).join("");
+  const svg = box.querySelector("svg"), tip = $("#ex-tip"), xh = $("#ex-x");
+  const mover = ev => {
+    const r = svg.getBoundingClientRect(), sx = (ev.clientX - r.left) * W / r.width;
+    let best = dados[0]; for (const d of dados) if (Math.abs(X(d.tokens) - sx) < Math.abs(X(best.tokens) - sx)) best = d;
+    xh.setAttribute("x1", X(best.tokens)); xh.setAttribute("x2", X(best.tokens)); xh.setAttribute("visibility", "visible");
+    tip.hidden = false;
+    tip.innerHTML = `<div style="margin-bottom:4px"><b>k = ${best.k}</b> · ${fmt(best.tokens)} tokens</div>` + SERIES.map(([k, n, c]) => `<div class="r"><span><i style="background:var(${c})"></i>${n}</span><span class="v">${best[k].toFixed(2)} ms</span></div>`).join("");
+    const px = X(best.tokens) * r.width / W; tip.style.left = `${Math.min(px + 12, r.width - tip.offsetWidth - 4)}px`; tip.style.top = `10px`;
+    if (px + 12 + tip.offsetWidth > r.width) tip.style.left = `${Math.max(0, px - tip.offsetWidth - 12)}px`;
+  };
+  const sair = () => { tip.hidden = true; xh.setAttribute("visibility", "hidden"); };
+  $("#ex-hit").addEventListener("pointermove", mover); $("#ex-hit").addEventListener("pointerdown", mover); $("#ex-hit").addEventListener("pointerleave", sair);
+  const f2 = v => v.toFixed(2), f4 = v => v.toFixed(4);
+  $("#ex-tab").innerHTML = `<thead><tr><th class="num">k</th><th class="num">tokens</th><th class="num">pré-proc (ms)</th><th class="num">índice (ms)</th><th class="num">Trie (ms)</th><th class="num">busca (ms)</th><th class="num">prefixo (ms)</th></tr></thead><tbody>${dados.map(d => `<tr><td class="num">${d.k}</td><td class="num">${fmt(d.tokens)}</td><td class="num">${f2(d.pre)}</td><td class="num">${f2(d.idx)}</td><td class="num">${f2(d.trie)}</td><td class="num">${f4(d.busca)}</td><td class="num">${f4(d.pref)}</td></tr>`).join("")}</tbody>`;
+  const r = dados.at(-1), q = dados[0];
+  $("#ex-src").innerHTML = `${origem}. De k = 1 para k = 32 o texto cresce ${Math.round(r.tokens / q.tokens)}×: o pré-processamento cresce ${(r.pre / q.pre).toFixed(1)}× e o índice ${(r.idx / q.idx).toFixed(1)}× (lineares), a Trie só ${(r.trie / q.trie).toFixed(1)}×. A busca exata no hash fica em ~${f4(r.busca)} ms e a busca pelo prefixo “comp” em ~${f4(r.pref)} ms, em qualquer tamanho.`;
+}
+$("#ex-py").onclick = () => { $("#ex-py").setAttribute("aria-pressed", "true"); $("#ex-js").setAttribute("aria-pressed", "false"); exDesenhar(EX_PY, "Medido com Python 3.11 rodando <code>experimento_escala.py</code>"); };
+$("#ex-js").onclick = () => {
+  $("#ex-js").setAttribute("aria-pressed", "true"); $("#ex-py").setAttribute("aria-pressed", "false");
+  $("#ex-src").textContent = "Medindo…";
+  setTimeout(() => { EX_JS = exRodarJS(); exDesenhar(EX_JS, "Medido agora, neste navegador, com a versão JavaScript do mesmo código"); }, 30);
+};
+exDesenhar(EX_PY, "Medido com Python 3.11 rodando <code>experimento_escala.py</code>");
+
+/* ---------- inicialização ---------- */
+heroRender(); ppRender(); htReset(); ixTop(); ixConsultar($("#ix-in").value);
+
+/* destaca a seção visível na barra */
+const links = $$(".toc a");
+const obs = new IntersectionObserver(es => es.forEach(e => {
+  if (e.isIntersecting) links.forEach(a => a.classList.toggle("ativo", a.getAttribute("href") === "#" + e.target.id));
+}), { rootMargin: "-45% 0px -50% 0px" });
+$$("section.sec").forEach(s => obs.observe(s));
+</script>
+<!--CONTEUDO_FIM-->
+</body>
+</html>

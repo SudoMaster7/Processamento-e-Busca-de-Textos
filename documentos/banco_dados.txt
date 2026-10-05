@@ -1,0 +1,19 @@
+Banco de Dados
+
+Um banco de dados é uma coleção organizada de dados relacionados, armazenada de forma que possa ser consultada, atualizada e gerenciada com eficiência. O software responsável por essa gestão é o sistema gerenciador de banco de dados, que controla o acesso concorrente, a segurança, a integridade e a recuperação em caso de falhas.
+
+O modelo relacional, proposto por Edgar Codd, organiza os dados em tabelas compostas por linhas e colunas. Cada tabela representa uma entidade, e os relacionamentos entre tabelas são estabelecidos por chaves primárias e chaves estrangeiras. A linguagem SQL é utilizada para definir estruturas, inserir, atualizar, remover e consultar dados. Comandos como SELECT, INSERT, UPDATE e DELETE fazem parte do dia a dia de qualquer desenvolvedor.
+
+A normalização é o processo de organizar as tabelas para reduzir redundâncias e evitar anomalias de atualização. As formas normais, como a primeira, a segunda e a terceira forma normal, definem regras progressivas para a estrutura das tabelas. Em alguns cenários, porém, a desnormalização é aplicada de propósito para melhorar o desempenho de consultas de leitura.
+
+As transações garantem que um conjunto de operações seja executado de forma confiável. As propriedades ACID, que significam atomicidade, consistência, isolamento e durabilidade, asseguram que uma transferência bancária, por exemplo, não seja executada pela metade. O controle de concorrência utiliza bloqueios ou múltiplas versões dos dados para permitir que vários usuários acessem o banco ao mesmo tempo.
+
+Os índices são estruturas auxiliares que aceleram as buscas. Sem índice, o banco precisa percorrer a tabela inteira, em uma busca sequencial. Com um índice baseado em árvore B, a busca passa a ter custo logarítmico e também permite consultas por intervalo. Índices baseados em hash oferecem busca constante em média para igualdade, mas não são adequados para consultas por intervalo ou ordenação. Assim como em um mecanismo de busca, a escolha do índice depende do tipo de consulta mais frequente.
+
+Os bancos de dados não relacionais, conhecidos como NoSQL, surgiram para atender aplicações com grandes volumes de dados e necessidade de escalabilidade horizontal. Existem bancos orientados a documentos, como o MongoDB, bancos chave e valor, como o Redis, bancos colunares, como o Cassandra, e bancos orientados a grafos, como o Neo4j. Cada modelo é adequado a um tipo específico de problema.
+
+Os mecanismos de busca textual, como o Elasticsearch, são construídos sobre índices invertidos. Em vez de procurar a palavra em cada documento, o sistema consulta diretamente a lista de documentos associada a cada termo. Recursos de busca textual também estão disponíveis em bancos relacionais, como o PostgreSQL, que oferece índices específicos para texto completo.
+
+A modelagem de dados é uma etapa essencial no desenvolvimento de sistemas. O modelo conceitual, geralmente representado por um diagrama entidade relacionamento, descreve as entidades e seus relacionamentos. O modelo lógico transforma essa representação em tabelas, e o modelo físico define detalhes de armazenamento, tipos de dados e índices.
+
+A administração de banco de dados envolve rotinas de cópia de segurança, monitoramento de desempenho, ajuste de consultas lentas e controle de permissões de acesso. Com o crescimento das leis de proteção de dados, a segurança e a privacidade das informações armazenadas tornaram-se ainda mais importantes.

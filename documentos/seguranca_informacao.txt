@@ -1,0 +1,17 @@
+Segurança da Informação
+
+A segurança da informação tem como objetivo proteger os dados e os sistemas contra acessos não autorizados, alterações indevidas e indisponibilidade. Seus três pilares são a confidencialidade, que garante que apenas pessoas autorizadas acessem a informação, a integridade, que assegura que os dados não sejam modificados de forma indevida, e a disponibilidade, que garante o acesso à informação sempre que necessário.
+
+A criptografia é uma das principais ferramentas da segurança. Na criptografia simétrica, a mesma chave é utilizada para cifrar e decifrar a mensagem, como no algoritmo AES. Na criptografia assimétrica, cada usuário possui um par de chaves, uma pública e uma privada, como no algoritmo RSA. A criptografia assimétrica permite a troca segura de chaves e a criação de assinaturas digitais, que comprovam a autoria e a integridade de um documento.
+
+As funções hash criptográficas transformam uma entrada de qualquer tamanho em uma saída de tamanho fixo, chamada resumo. Uma boa função hash criptográfica deve ser rápida de calcular, muito difícil de inverter e resistente a colisões, ou seja, deve ser praticamente impossível encontrar duas entradas diferentes que produzam o mesmo resumo. Algoritmos como SHA-256 são usados para verificar a integridade de arquivos, armazenar senhas e construir blockchains. É importante não confundir essas funções com as funções hash usadas em tabelas hash, que priorizam a velocidade e a boa distribuição das chaves, e não a resistência a ataques.
+
+O armazenamento de senhas exige cuidados especiais. As senhas nunca devem ser guardadas em texto puro. O correto é armazenar o resultado de uma função hash lenta, como bcrypt ou Argon2, combinada com um valor aleatório chamado sal. Assim, mesmo que o banco de dados seja vazado, recuperar as senhas originais se torna muito difícil.
+
+Entre as ameaças mais comuns estão os vírus, os worms, os cavalos de Troia e o ransomware, que sequestra os dados da vítima e exige pagamento para liberá-los. A engenharia social explora a confiança das pessoas, e o phishing utiliza mensagens falsas para roubar credenciais. Em aplicações web, ataques como injeção de SQL e cross-site scripting exploram falhas no tratamento das entradas do usuário. Validar e tratar todas as entradas é uma regra básica de programação segura.
+
+A autenticação verifica a identidade do usuário, e a autorização define o que ele pode fazer. A autenticação de múltiplos fatores combina algo que o usuário sabe, como uma senha, algo que ele possui, como um celular, e algo que ele é, como a impressão digital. O princípio do menor privilégio recomenda que cada usuário e cada programa tenha apenas as permissões estritamente necessárias.
+
+As organizações utilizam políticas de segurança, planos de continuidade de negócios, cópias de segurança e monitoramento constante. Ferramentas de detecção de intrusão analisam registros e tráfego de rede em busca de padrões suspeitos, muitas vezes utilizando algoritmos de busca de padrões em texto e técnicas de inteligência artificial.
+
+No Brasil, a Lei Geral de Proteção de Dados estabelece regras para a coleta, o tratamento e o compartilhamento de dados pessoais. A segurança da informação, portanto, envolve tecnologia, processos e pessoas, e deve ser considerada desde o início do projeto de qualquer sistema.

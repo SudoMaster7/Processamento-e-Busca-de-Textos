@@ -1,0 +1,17 @@
+Sistemas Operacionais
+
+O sistema operacional é o software que gerencia os recursos de hardware de um computador e oferece serviços para os programas de aplicação. Ele atua como intermediário entre o usuário e o hardware, escondendo detalhes complexos e permitindo que vários programas sejam executados ao mesmo tempo de forma segura. Linux, Windows, macOS, Android e iOS são exemplos de sistemas operacionais amplamente utilizados.
+
+Uma das principais funções do sistema operacional é o gerenciamento de processos. Um processo é um programa em execução, com seu próprio espaço de memória, registradores e recursos. O escalonador decide qual processo utilizará o processador em cada instante. Algoritmos de escalonamento como primeiro a chegar primeiro a ser servido, menor tarefa primeiro, prioridade e round robin buscam equilibrar justiça, tempo de resposta e aproveitamento do processador. As threads são fluxos de execução dentro de um mesmo processo e compartilham sua memória.
+
+Quando vários processos ou threads acessam recursos compartilhados, surgem problemas de concorrência. As condições de corrida ocorrem quando o resultado depende da ordem de execução. Para evitá-las, utilizam-se mecanismos de sincronização como semáforos, mutex e monitores. O impasse, também chamado de deadlock, acontece quando dois ou mais processos ficam esperando indefinidamente por recursos que estão presos uns pelos outros.
+
+O gerenciamento de memória controla quais partes da memória principal estão em uso e por quais processos. A memória virtual permite que um processo utilize mais memória do que a disponível fisicamente, armazenando partes dele em disco. A paginação divide a memória em blocos de tamanho fixo chamados páginas. Quando uma página necessária não está na memória principal ocorre uma falta de página, e algoritmos de substituição, como o menos recentemente utilizado, decidem qual página deve ser removida.
+
+O sistema de arquivos organiza os dados armazenados em disco em arquivos e diretórios. Ele controla nomes, permissões, datas de modificação e a localização física dos blocos. Para encontrar rapidamente um arquivo em diretórios com muitos itens, alguns sistemas de arquivos utilizam árvores B ou tabelas hash. Um programa que processa automaticamente todos os arquivos de uma pasta depende das chamadas do sistema operacional para listar o conteúdo do diretório e abrir cada arquivo.
+
+O gerenciamento de entrada e saída controla a comunicação com dispositivos como teclado, mouse, monitor, disco, rede e impressoras. Os drivers são módulos que conhecem os detalhes de cada dispositivo. As interrupções permitem que o hardware avise o processador quando uma operação termina, evitando que ele fique esperando ativamente.
+
+A segurança e a proteção também são responsabilidades do sistema operacional. Ele separa o modo usuário do modo núcleo, controla permissões de acesso a arquivos e autentica usuários. Os sistemas operacionais modernos ainda oferecem virtualização e contêineres, que permitem executar vários ambientes isolados em uma mesma máquina física, tecnologia fundamental para a computação em nuvem.
+
+Estudar sistemas operacionais ajuda a entender o desempenho dos programas. O tempo medido para executar uma consulta, por exemplo, pode variar conforme a carga do processador, o uso de cache e a atuação do escalonador, motivo pelo qual medições de tempo devem ser repetidas e interpretadas com cuidado.
